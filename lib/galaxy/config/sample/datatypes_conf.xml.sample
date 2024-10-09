@@ -1003,6 +1003,7 @@
     <datatype extension="prm" type="galaxy.datatypes.gsas2:InstrumentParameter" display_in_upload="true" description="GSASII prm instrument parameter file." />
     <datatype extension="instprm" type="galaxy.datatypes.gsas2:InstrumentParameter2" display_in_upload="true" description="GSASII instprm instrument parameter file." />
     <datatype extension="raw" type="galaxy.datatypes.gsas2:RawPowderData" display_in_upload="true" description="GSASII raw neutron powder diffraction data" />
+    <datatype extension="gsa" type="galaxy.datatypes.gsas2:GsaPowderData" display_in_upload="true" description="GSASII gsa powder diffraction data" />
 
 
     <!-- ECOLOGY types -->
@@ -1023,6 +1024,7 @@
     and so on.
     -->
     <sniffer type="galaxy.datatypes.gsas2:RawPowderData"/>
+    <sniffer type="galaxy.datatypes.gsas2:GsaPowderData"/>
     <sniffer type="galaxy.datatypes.gsas2:InstrumentParameter"/>
     <sniffer type="galaxy.datatypes.gsas2:InstrumentParameter2"/>
     <sniffer type="galaxy.datatypes.plant_tribes:PlantTribesKsComponents"/>

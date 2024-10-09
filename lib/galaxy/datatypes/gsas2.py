@@ -3,7 +3,6 @@ classes of datatypes from GSASII
 """
 import logging
 from galaxy.datatypes.data import Text
-from galaxy.datatypes.sniff import  build_sniff_from_prefix
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ class InstrumentParameter2(Text):
         header = open(filename).read(50)
         return "GSAS-II instrument parameter file" in header
     
-@build_sniff_from_prefix
+
 class RawPowderData(Text):
     """
     GSASII .raw neutron diffraction Powder data 
@@ -36,3 +35,14 @@ class RawPowderData(Text):
     def sniff (self, filename):
 
         return False
+    
+class GsaPowderData(Text):
+    """
+    GSASII .raw neutron diffraction Powder data 
+    """
+    file_ext = "gsa"
+    def sniff (self, filename):
+        header = open(filename).read(70)
+        result = ("Sample Run:" in header) and ("Wavelength:" in header)
+        return result
+    
