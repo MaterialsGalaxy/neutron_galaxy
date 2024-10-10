@@ -1000,6 +1000,7 @@
     <datatype extension="feff" type="galaxy.datatypes.tabular:CSV" subclass="true" description="CSV representing summary of FEFF paths."/>
     <datatype extension="feffit" type="galaxy.datatypes.data:Text" subclass="true" description="Report of Artemis FEFFIT."/>
     <!-- GSASII types-->
+    <datatype extension="gpx" type="galaxy.datatypes.gsas2:Gsas2Project" display_in_upload="true" description="GSASII project file." />
     <datatype extension="prm" type="galaxy.datatypes.gsas2:InstrumentParameter" display_in_upload="true" description="GSASII prm instrument parameter file." />
     <datatype extension="instprm" type="galaxy.datatypes.gsas2:InstrumentParameter2" display_in_upload="true" description="GSASII instprm instrument parameter file." />
     <datatype extension="raw" type="galaxy.datatypes.gsas2:RawPowderData" display_in_upload="true" description="GSASII raw neutron powder diffraction data" />
@@ -1023,6 +1024,7 @@
     defined format first, followed by next-most rigidly defined,
     and so on.
     -->
+    <sniffer type="galaxy.datatypes.gsas2:Gsas2Project"/>
     <sniffer type="galaxy.datatypes.gsas2:RawPowderData"/>
     <sniffer type="galaxy.datatypes.gsas2:GsaPowderData"/>
     <sniffer type="galaxy.datatypes.gsas2:InstrumentParameter"/>
