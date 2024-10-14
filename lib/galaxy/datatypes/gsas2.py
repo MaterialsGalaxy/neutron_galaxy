@@ -2,9 +2,8 @@
 classes of datatypes from GSASII
 """
 import logging
-from galaxy.datatypes.data import (
-    Text
-)
+from galaxy.datatypes.data import Text
+
 from galaxy.datatypes.binary import Binary
 
 log = logging.getLogger(__name__)
@@ -16,6 +15,7 @@ class Gsas2Project(Binary):
     file is pickled can be read by pickle.load(fp,encoding='latin-1')
     """
     file_ext = "gpx"
+    # sniffing disabled for now
 
     def sniff(self, filename):
         return False
@@ -49,6 +49,7 @@ class RawPowderData(Text):
     GSASII .raw diffraction Powder data
     """
     file_ext = "raw"
+    # sniffing disabled for now
 
     def sniff(self, filename):
         return False
