@@ -3,9 +3,9 @@ classes of datatypes from GSASII
 """
 
 import logging
-from galaxy.datatypes.data import Text
 
 from galaxy.datatypes.binary import Binary
+from galaxy.datatypes.data import Text
 
 log = logging.getLogger(__name__)
 
