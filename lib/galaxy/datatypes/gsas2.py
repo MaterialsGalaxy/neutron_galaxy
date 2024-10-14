@@ -1,6 +1,7 @@
 """
 classes of datatypes from GSASII
 """
+
 import logging
 from galaxy.datatypes.data import Text
 
@@ -14,6 +15,7 @@ class Gsas2Project(Binary):
     GSASII .gpx project file format
     file is pickled can be read by pickle.load(fp,encoding='latin-1')
     """
+
     file_ext = "gpx"
     # sniffing disabled for now
 
@@ -28,6 +30,7 @@ class InstrumentParameter(Text):
     """
     GSASII .prm instrument parameter format
     """
+
     file_ext = "prm"
 
     def sniff(self, filename):
@@ -52,6 +55,7 @@ class InstrumentParameter2(Text):
     """
     GSASII .instprm instrument parameter format
     """
+
     file_ext = "instprm"
 
     def sniff(self, filename):
@@ -76,6 +80,7 @@ class RawPowderData(Text):
     """
     GSASII .raw diffraction Powder data
     """
+
     file_ext = "raw"
     # sniffing disabled for now
 
@@ -90,6 +95,7 @@ class GsaPowderData(Text):
     """
     GSASII .gsa diffraction Powder data
     """
+
     file_ext = "gsa"
 
     def sniff(self, filename):
