@@ -10,7 +10,7 @@ basic features include:
     - GSAS powder data files
     - Instrument parameter files
 
-- an interactive tool to view the histograms and set refinement limits
+- an interactive tool to view the histograms and set refinement limits (TODO)
 
 - an option to set background parameters 
 

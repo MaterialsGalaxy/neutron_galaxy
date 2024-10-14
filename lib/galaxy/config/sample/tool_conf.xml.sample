@@ -2,6 +2,7 @@
 <toolbox monitor="true">
   <section id="dev_tools" name="Tools under development">
     <tool file="dev_tools/gsas2_refinement/gsas2_refinement.xml" />
+    <tool file="dev_tools/upload_gsas2_refinement/upload_gsas2_refinement.xml" />
   </section>
   <section id="getext" name="Get Data">
     <tool file="data_source/upload.xml" />
