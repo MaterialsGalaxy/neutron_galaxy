@@ -18,6 +18,9 @@ class Gsas2Project(Binary):
     # sniffing disabled for now
 
     def sniff(self, filename):
+        """
+        Returns false and the user must manually set
+        """
         return False
 
 
@@ -28,6 +31,18 @@ class InstrumentParameter(Text):
     file_ext = "prm"
 
     def sniff(self, filename):
+        """
+        Try to guess if the file is a GSASII .prm isntrument parameter file
+
+        >>> from galaxy.datatypes.sniff import get_test_fname
+        >>> fname = get_test_fname('gsas_instrument.prm')
+        >>> InstrumentParameter().sniff(fname)
+        True
+
+        >>> fname = get_test_fname('gsas_instrument.instprm')
+        >>> InstrumentParameter().sniff(fname)
+        False
+        """
 
         header = open(filename).read(22)
         return header == "            1234567890"
@@ -40,6 +55,19 @@ class InstrumentParameter2(Text):
     file_ext = "instprm"
 
     def sniff(self, filename):
+        """
+        Try to guess if the file is a GSASII .instprm isntrument parameter file
+
+        >>> from galaxy.datatypes.sniff import get_test_fname
+        >>> fname = get_test_fname('gsas_instrument.instprm')
+        >>> InstrumentParameter2().sniff(fname)
+        True
+
+        >>> fname = get_test_fname('gsas_instrument.prm')
+        >>> InstrumentParameter2().sniff(fname)
+        False
+        """
+
         header = open(filename).read(50)
         return "GSAS-II instrument parameter file" in header
 
@@ -52,6 +80,9 @@ class RawPowderData(Text):
     # sniffing disabled for now
 
     def sniff(self, filename):
+        """
+        returns false and the user must manually set for now.
+        """
         return False
 
 
@@ -62,6 +93,19 @@ class GsaPowderData(Text):
     file_ext = "gsa"
 
     def sniff(self, filename):
+        """
+        Try to guess if the file is a GSASII .gsa powder data file
+
+        >>> from galaxy.datatypes.sniff import get_test_fname
+        >>> fname = get_test_fname('gsas_powder.gsa')
+        >>> GsaPowderData().sniff(fname)
+        True
+
+        >>> fname = get_test_fname('gsas_powder.raw')
+        >>> GsaPowderData().sniff(fname)
+        False
+        """
+
         header = open(filename).read(70)
         result = ("Sample Run:" in header) and ("Wavelength:" in header)
         return result
