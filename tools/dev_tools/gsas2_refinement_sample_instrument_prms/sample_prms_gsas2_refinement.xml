@@ -1,0 +1,47 @@
+<tool id="sample_prms_gsas2" name="GSASII Sample and Instrument Parameters Refinement" profile="22.05" version="0">
+    <description>Tool for GSASII Rietveld refinement of powder diffraction data with settings for refinement of sample and instrument parameters</description>
+    <requirements></requirements>
+    <command detect_errors="exit_code"><![CDATA[
+        which conda &&
+        conda init &&
+        source ~/.bashrc &&
+        conda activate GSASII &&
+        mkdir app &&
+        cd app/ &&
+        touch $output &&
+        mkdir portal &&
+
+        python $__tool_directory__/gsas2_sample_instrument_refinement.py
+                --project-filename $project
+                --output-directory /portal
+        > >(tee -a $output) 2> >(tee -a $output >&2)
+    ]]></command>
+    <inputs>
+        <!--instrument parameters-->
+        <param name="project" type="data" format="binary" label="GSASII project file" />
+        <param name="lam" type="boolean" checked="false" truevalue="true" falsevalue="" label="lam"/>
+        <param name="zero" type="boolean" checked="false" truevalue="true" falsevalue="" label="zero"/>
+        <param name="U" type="boolean" checked="false" truevalue="true" falsevalue="" label="U"/>
+        <param name="V" type="boolean" checked="false" truevalue="true" falsevalue="" label="V"/>
+        <param name="W" type="boolean" checked="false" truevalue="true" falsevalue="" label="W"/>
+        <param name="X" type="boolean" checked="false" truevalue="true" falsevalue="" label="X"/>
+        <param name="Y" type="boolean" checked="false" truevalue="true" falsevalue="" label="Y"/>
+        <param name="Z" type="boolean" checked="false" truevalue="true" falsevalue="" label="Z"/>
+        <param name="SHL" type="boolean" checked="false" truevalue="true" falsevalue="" label="SH/L"/>
+        <!--sample parameters-->
+        <param name="HistSF" type="boolean" checked="false" truevalue="true" falsevalue="" label="histogram scale factor"/>
+        <param name="Xdisp" type="boolean" checked="false" truevalue="true" falsevalue="" label="Sample X displ. perp. to beam"/>
+        <param name="Ydisp" type="boolean" checked="false" truevalue="true" falsevalue="" label="Sample Y displ. prll. to beam"/>
+        <param name="SampAbs" type="boolean" checked="false" truevalue="true" falsevalue="" label="Sample absorption"/>
+
+    </inputs>
+    <outputs>
+        <data format="txt" name="output" label="GSAS2 console output"></data>
+        <collection type="list" name="output_collection1" label="GSAS2 refinement output">
+            <discover_datasets format="binary" pattern="__designation__" directory="app/portal" visible="true"/>
+        </collection>
+    </outputs>
+    <help>
+        A tool to run a GSAS2 Rietveld refinement.
+    </help>
+</tool>

@@ -5,15 +5,14 @@ import numpy as np
 
 """
 change how GSASIIscriptable is imported for actual deployment
-locally i added: 
+locally i added:
     conda activate GSASII
 in the tool xml commands to get this to work
 """
-#import G2script as G2sc
-sys.path.append('/home/mkscd/miniconda3/envs/GSASII/GSAS-II/GSASII') # needed to "find" GSAS-II modules
-#sys.path.append('/home/mkscd/miniconda3/envs/GSASII/bin') # needed to "find" GSAS-II modules
+# import G2script as G2sc
+sys.path.append("/home/mkscd/miniconda3/envs/GSASII/GSAS-II/GSASII")  # needed to "find" GSAS-II modules
+# sys.path.append('/home/mkscd/miniconda3/envs/GSASII/bin') # needed to "find" GSAS-II modules
 import GSASIIscriptable as G2sc
-
 
 
 def run_gsas2_fit(
@@ -73,7 +72,7 @@ def run_gsas2_fit(
 
     # start GSAS-II refinement
     # create a project file
-    
+
     proj_path = os.path.join(os.getcwd(), "portal/", output_stem_fn + "_initial.gpx")
 
     print(proj_path)
@@ -86,7 +85,7 @@ def run_gsas2_fit(
     if os.path.exists(proj_path):
         print("created project at path:", proj_path)
     else:
-        print("no project created at path",proj_path)
+        print("no project created at path", proj_path)
     """
     Here the project does get created even though the output prints the second statement
     something is wrong with the output paths in general
@@ -102,32 +101,32 @@ def run_gsas2_fit(
     """
 
     # convert prm file from dat back to prm
-    with open(prm_fn, 'r') as file:
+    with open(prm_fn, "r") as file:
         content = file.read()
         prm_fn_fixed = open("new_param_file.prm", "w")
         prm_fn_fixed.write(content)
         prm_path = os.path.abspath("new_param_file.prm")
-        #print(content)
+        # print(content)
         prm_fn_fixed.close()
 
     # convert data file back to raw
-    with open(gsa_fn, 'r') as file:
+    with open(gsa_fn, "r") as file:
         content = file.read()
         gsa_fn_fixed = open("new_pwdr_file.raw", "w")
         gsa_fn_fixed.write(content)
         gsa_path = os.path.abspath("new_pwdr_file.raw")
-        #print(content)
+        # print(content)
         gsa_fn_fixed.close()
 
     # convert dat file back to CIF
-    with open(structure_fn, 'r') as file:
+    with open(structure_fn, "r") as file:
         content = file.read()
         cif_fn_fixed = open("new_cif_file.cif", "w")
         cif_fn_fixed.write(content)
         cif_path = os.path.abspath("new_cif_file.cif")
-        #print(content)
+        # print(content)
         cif_fn_fixed.close()
-    
+
     if stype == "N":
         print("heee!!!")
         # debugging print statements
@@ -136,7 +135,7 @@ def run_gsas2_fit(
         print(cif_path)
         print(bank)
         # prmFile = "pdfitc/utils/NOMAD_2019B_Si_sixbanks_Shifter_instrument_file.prm"
-        hist1 = gpx.add_powder_histogram("new_pwdr_file.raw","new_param_file.prm", databank=bank, instbank=bank)
+        hist1 = gpx.add_powder_histogram("new_pwdr_file.raw", "new_param_file.prm", databank=bank, instbank=bank)
         print("now!")
         hist1.set_refinements({"Limits": [xmin, xmax]})
     if stype == "X":
@@ -205,7 +204,7 @@ def run_gsas2_fit(
     output_cif_fn = os.path.join(os.getcwd(), "portal/", output_stem_fn + "_refined.cif")
     gpx.phase("structure").export_CIF(output_cif_fn)
     cell_r = gpx.phase("structure").get_cell()
- 
+
     # header = "Rw = {} \nx           ycalc           y           dy           bkg".format(rw)
     # np.savetxt(f"{output_stem_fn}bank{str(bank)}.dat",
     #            np.transpose([x, ycalc, y, dy, bkg]),
@@ -215,4 +214,3 @@ def run_gsas2_fit(
     # df.update(cell)
 
     return rw, x, y, ycalc, dy, bkg, cell_i, cell_r, ref_list
-

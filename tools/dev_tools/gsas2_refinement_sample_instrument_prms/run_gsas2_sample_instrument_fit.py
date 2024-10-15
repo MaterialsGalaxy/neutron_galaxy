@@ -1,11 +1,12 @@
 import os
 import sys
-from typing import Union, Dict, Any
+
+# from typing import Union, Dict, Any
 import numpy as np
 
 """
 change how GSASIIscriptable is imported for actual deployment
-locally i added: 
+locally i added:
     conda activate GSASII
 in the tool xml commands to get this to work
 """
@@ -16,17 +17,18 @@ import GSASIIscriptable as G2sc
 
 
 def run_gsas2_fit(
-    structure_fn,
-    gsa_fn,
-    prm_fn,
+    project_fn,
+    # structure_fn,
+    # gsa_fn,
+    # prm_fn,
     output_stem_fn,
-    stype,
-    bank,
-    xmin,
-    xmax,
+    # stype,
+    # bank,
+    # xmin,
+    # xmax,
     output_path,
     num_cycles=5,
-    init_vals: Union[None, Dict[str, Any]] = None,
+    # init_vals: Union[None, Dict[str, Any]] = None,
 ):
     """
     Parameters
@@ -71,15 +73,16 @@ def run_gsas2_fit(
     print("******************************")
 
     # start GSAS-II refinement
-    # create a project file
-
+    # create a new project file for refinement 
     proj_path = os.path.join(os.getcwd(), "portal/", output_stem_fn + "_initial.gpx")
 
     print(proj_path)
 
     if os.path.exists(proj_path):
         os.remove(proj_path)
-    gpx = G2sc.G2Project(newgpx=proj_path)
+
+    # load from input project save to new name and directory
+    gpx = G2sc.G2Project(gpxfile= project_fn, newgpx=proj_path)
 
     # check if the project got created
     if os.path.exists(proj_path):
@@ -99,57 +102,57 @@ def run_gsas2_fit(
     fix this by reading them in, and saving the encoded text back to the filetypes that GSAS requires.
     Then pass the path of the new files to the GSAS functions.
     """
-
+    """
     # convert prm file from dat back to prm
-    with open(prm_fn, "r") as file:
+    with open(prm_fn, 'r') as file:
         content = file.read()
         prm_fn_fixed = open("new_param_file.prm", "w")
         prm_fn_fixed.write(content)
         prm_path = os.path.abspath("new_param_file.prm")
-        # print(content)
+        #print(content)
         prm_fn_fixed.close()
 
     # convert data file back to raw
-    with open(gsa_fn, "r") as file:
+    with open(gsa_fn, 'r') as file:
         content = file.read()
         gsa_fn_fixed = open("new_pwdr_file.raw", "w")
         gsa_fn_fixed.write(content)
         gsa_path = os.path.abspath("new_pwdr_file.raw")
-        # print(content)
+        #print(content)
         gsa_fn_fixed.close()
 
     # convert dat file back to CIF
-    with open(structure_fn, "r") as file:
+    with open(structure_fn, 'r') as file:
         content = file.read()
         cif_fn_fixed = open("new_cif_file.cif", "w")
         cif_fn_fixed.write(content)
         cif_path = os.path.abspath("new_cif_file.cif")
-        # print(content)
+        #print(content)
         cif_fn_fixed.close()
+    """
+    # if stype == "N":
+    #    print("heee!!!")
+    # debugging print statements
+    #    print(prm_path)
+    #   print(gsa_path)
+    #    print(cif_path)
+    #    print(bank)
+    # prmFile = "pdfitc/utils/NOMAD_2019B_Si_sixbanks_Shifter_instrument_file.prm"
+    #    hist1 = gpx.add_powder_histogram("new_pwdr_file.raw","new_param_file.prm", databank=bank, instbank=bank)
+    #    print("now!")
+    #    hist1.set_refinements({"Limits": [xmin, xmax]})
+    # if stype == "X":
+    #    print("here! x-ray!!")
+    # prmFile = "pdfitc/utils/PDFNSLSII.instprm"
+    #    hist1 = gpx.add_powder_histogram("new_pwdr_file.raw", "new_param_file.prm")
+    #    hist1.set_refinements({"Limits": [xmin, xmax]})
 
-    if stype == "N":
-        print("heee!!!")
-        # debugging print statements
-        print(prm_path)
-        print(gsa_path)
-        print(cif_path)
-        print(bank)
-        # prmFile = "pdfitc/utils/NOMAD_2019B_Si_sixbanks_Shifter_instrument_file.prm"
-        hist1 = gpx.add_powder_histogram("new_pwdr_file.raw", "new_param_file.prm", databank=bank, instbank=bank)
-        print("now!")
-        hist1.set_refinements({"Limits": [xmin, xmax]})
-    if stype == "X":
-        print("here! x-ray!!")
-        # prmFile = "pdfitc/utils/PDFNSLSII.instprm"
-        hist1 = gpx.add_powder_histogram("new_pwdr_file.raw", "new_param_file.prm")
-        hist1.set_refinements({"Limits": [xmin, xmax]})
-
-    hists.append(hist1)
+    # hists.append(hist1)
 
     # step 2: add a phase and link it to the previous histograms
-    _ = gpx.add_phase("new_cif_file.cif", phasename="structure", fmthint="CIF", histograms=hists)
-    print("phase loaded")
-    cell_i = gpx.phase("structure").get_cell()
+    # _ = gpx.add_phase("new_cif_file.cif", phasename="structure", fmthint="CIF", histograms=hists)
+    # print("phase loaded")
+    #cell_i = gpx.phase("structure").get_cell()
 
     # step 3: increase # of cycles to improve convergence
     gpx.data["Controls"]["data"]["max cyc"] = num_cycles
@@ -161,7 +164,7 @@ def run_gsas2_fit(
         "call": HistStats,
     }
     # refinement step 2: turn on background refinement (Hist)
-    if init_vals and "bkg" in init_vals:
+    """    if init_vals and "bkg" in init_vals:
         bkg_type = init_vals["bkg"]["Type"]
         num_coeffs = init_vals["bkg"]["NumCoeffs"]
         coeffs = init_vals["bkg"]["Coeffs"]
@@ -174,13 +177,15 @@ def run_gsas2_fit(
             "set": {"Background": {"type": "chebyschev", "no. coeffs": 6, "refine": True}},
             "call": HistStats,
         }
+    """
     # refinement step 3: refine lattice parameter and Uiso refinement (Phase)
-    refdict3 = {
+    """    refdict3 = {
         "set": {"Atoms": {"all": "U"}, "Cell": True},  # set the Uiso and lattice parameters to be refined
         "call": HistStats,
     }
 
     dictList = [refdict1, refdict2, refdict3]
+    """
 
     # before fit, save project file first. Then in the future, the refined project file will update this one.
     gpx.save(os.path.join(os.getcwd(), "portal/", output_stem_fn + "_refined.gpx"))
