@@ -18,22 +18,40 @@
     ]]></command>
     <inputs>
         <!--instrument parameters-->
-        <param name="project" type="data" format="binary" label="GSASII project file" />
-        <param name="lam" type="boolean" checked="false" truevalue="true" falsevalue="" label="lam"/>
-        <param name="zero" type="boolean" checked="false" truevalue="true" falsevalue="" label="zero"/>
-        <param name="U" type="boolean" checked="false" truevalue="true" falsevalue="" label="U"/>
-        <param name="V" type="boolean" checked="false" truevalue="true" falsevalue="" label="V"/>
-        <param name="W" type="boolean" checked="false" truevalue="true" falsevalue="" label="W"/>
-        <param name="X" type="boolean" checked="false" truevalue="true" falsevalue="" label="X"/>
-        <param name="Y" type="boolean" checked="false" truevalue="true" falsevalue="" label="Y"/>
-        <param name="Z" type="boolean" checked="false" truevalue="true" falsevalue="" label="Z"/>
-        <param name="SHL" type="boolean" checked="false" truevalue="true" falsevalue="" label="SH/L"/>
+        <section id="instprms" name="Instrument Parameters">
+            <param name="inst_refine" type="select" label="instrument parameters to refine" multiple="true">
+                <option value="Lam" >lam</option>
+                <option value="Zero" >zero</option> 
+                <option value="U" >U</option> 
+                <option value="V" >V</option> 
+                <option value="W" >W</option> 
+                <option value="X" >X</option> 
+                <option value="Y" >Y</option> 
+                <option value="Z" >Z</option>
+                <option value="SH/L" >SH/L</option> 
+            </param> 
+            <param name="Zero" type="float" label="zero"/>
+            <param name="U" type="float" label="U"/>
+            <param name="V" type="float" label="V"/>
+            <param name="W" type="float" label="W"/>
+            <param name="X" type="float" label="X"/>
+            <param name="Y" type="float" label="Y"/>
+            <param name="Z" type="float" label="Z"/>
+            <param name="SH/L" type="float" label="SH/L"/>
+        </section>
         <!--sample parameters-->
-        <param name="HistSF" type="boolean" checked="false" truevalue="true" falsevalue="" label="histogram scale factor"/>
-        <param name="Xdisp" type="boolean" checked="false" truevalue="true" falsevalue="" label="Sample X displ. perp. to beam"/>
-        <param name="Ydisp" type="boolean" checked="false" truevalue="true" falsevalue="" label="Sample Y displ. prll. to beam"/>
-        <param name="SampAbs" type="boolean" checked="false" truevalue="true" falsevalue="" label="Sample absorption"/>
-
+        <section id="sampprms" name="Sample Parameters">
+            <param name="samp_refine" type="select" label="Sample parameters to refine" multiple="true">
+                <option value="Scale" >Histogram Scale Factor</option>
+                <option value="DisplaceX" >Sample X displ. perp. to beam</option>
+                <option value="DisplaceY" >Sample Y displ. prll. to beam</option>
+                <option value="Absorption" >Sample absorption</option>
+            </param>
+            <param name="HistSF" type="float"  label="histogram scale factor"/>
+            <param name="Xdisp" type="float"  label="Sample X displ. perp. to beam"/>
+            <param name="Ydisp" type="float"  label="Sample Y displ. prll. to beam"/>
+            <param name="SampAbs" type="float"  label="Sample absorption"/>
+        </section>
     </inputs>
     <outputs>
         <data format="txt" name="output" label="GSAS2 console output"></data>

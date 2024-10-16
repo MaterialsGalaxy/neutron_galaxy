@@ -73,7 +73,7 @@ def run_gsas2_fit(
     print("******************************")
 
     # start GSAS-II refinement
-    # create a new project file for refinement 
+    # create a new project file for refinement
     proj_path = os.path.join(os.getcwd(), "portal/", output_stem_fn + "_initial.gpx")
 
     print(proj_path)
@@ -82,7 +82,7 @@ def run_gsas2_fit(
         os.remove(proj_path)
 
     # load from input project save to new name and directory
-    gpx = G2sc.G2Project(gpxfile= project_fn, newgpx=proj_path)
+    gpx = G2sc.G2Project(gpxfile=project_fn, newgpx=proj_path)
 
     # check if the project got created
     if os.path.exists(proj_path):
@@ -178,6 +178,55 @@ def run_gsas2_fit(
             "call": HistStats,
         }
     """
+    # set initial values 
+    #for h in gpx.histograms():
+    #    h.setHistEntryValue(['Sample Parameters', 'DisplaceX'], 0.001)
+    # can also use h.getHistEntryList(keyname='Sample Parameters') to get a list of the values
+    # instrument and sample refinement steps
+    samplerefdict = {
+        "set": {
+            "Sample Parameters": [
+                "DisplaceX",
+                "DisplaceY",
+                "Scale",
+                "Absorption"
+            ]
+        }
+    }
+
+    # instrument refinement steps 
+
+    instrumentrefdict = {
+        "set": {
+            "Instrument Parameters":[
+                'U',
+                'V',
+                'W',
+                'X',
+                'Y',
+                'Z',
+                'SH/L',
+                'alpha',
+                'beta-0',
+                'beta-1',
+                'beta-q',
+                'sig-0',
+                'sig-1',
+                'sig-2',
+                'sig-q',
+                'difA',
+                'difB',
+                'difC',
+                'Zero',
+                'SH/L',
+                'Polariz.',
+                'Lam'
+            ]
+        }
+
+    }
+
+
     # refinement step 3: refine lattice parameter and Uiso refinement (Phase)
     """    refdict3 = {
         "set": {"Atoms": {"all": "U"}, "Cell": True},  # set the Uiso and lattice parameters to be refined
