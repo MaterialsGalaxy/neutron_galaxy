@@ -1001,9 +1001,9 @@
     <datatype extension="feffit" type="galaxy.datatypes.data:Text" subclass="true" description="Report of Artemis FEFFIT."/>
     <!-- GSASII types-->
     <datatype extension="gpx" type="galaxy.datatypes.gsas2:Gsas2Project" display_in_upload="true" description="GSASII project file." />
-    <datatype extension="prm" type="galaxy.datatypes.gsas2:InstrumentParameter" display_in_upload="true" description="GSASII prm instrument parameter file." />
-    <datatype extension="instprm" type="galaxy.datatypes.gsas2:InstrumentParameter2" display_in_upload="true" description="GSASII instprm instrument parameter file." />
-    <datatype extension="raw" type="galaxy.datatypes.gsas2:RawPowderData" display_in_upload="true" description="GSASII raw neutron powder diffraction data" />
+    <datatype extension="prm" type="galaxy.datatypes.gsas2:Prm" display_in_upload="true" description="GSASII prm instrument parameter file." />
+    <datatype extension="instprm" type="galaxy.datatypes.gsas2:Instprm" display_in_upload="true" description="GSASII instprm instrument parameter file." />
+    <datatype extension="raw" type="galaxy.datatypes.gsas2:RawPowderData" display_in_upload="true" description="GSASII raw powder diffraction data" />
     <datatype extension="gsa" type="galaxy.datatypes.gsas2:GsaPowderData" display_in_upload="true" description="GSASII gsa powder diffraction data" />
 
 
@@ -1027,8 +1027,8 @@
     <sniffer type="galaxy.datatypes.gsas2:Gsas2Project"/>
     <sniffer type="galaxy.datatypes.gsas2:RawPowderData"/>
     <sniffer type="galaxy.datatypes.gsas2:GsaPowderData"/>
-    <sniffer type="galaxy.datatypes.gsas2:InstrumentParameter"/>
-    <sniffer type="galaxy.datatypes.gsas2:InstrumentParameter2"/>
+    <sniffer type="galaxy.datatypes.gsas2:Prm"/>
+    <sniffer type="galaxy.datatypes.gsas2:Instprm"/>
     <sniffer type="galaxy.datatypes.plant_tribes:PlantTribesKsComponents"/>
     <sniffer type="galaxy.datatypes.plant_tribes:Smat"/>
     <sniffer type="galaxy.datatypes.mothur:Sabund"/>

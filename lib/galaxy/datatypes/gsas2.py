@@ -26,7 +26,7 @@ class Gsas2Project(Binary):
         return False
 
 
-class InstrumentParameter(Text):
+class Prm(Text):
     """
     GSASII .prm instrument parameter format
     """
@@ -51,7 +51,7 @@ class InstrumentParameter(Text):
         return header == "            1234567890"
 
 
-class InstrumentParameter2(Text):
+class Instprm(Text):
     """
     GSASII .instprm instrument parameter format
     """
