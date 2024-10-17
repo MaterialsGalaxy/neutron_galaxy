@@ -39,11 +39,11 @@ class Prm(Text):
 
         >>> from galaxy.datatypes.sniff import get_test_fname
         >>> fname = get_test_fname('gsas_instrument.prm')
-        >>> InstrumentParameter().sniff(fname)
+        >>> Prm().sniff(fname)
         True
 
         >>> fname = get_test_fname('gsas_instrument.instprm')
-        >>> InstrumentParameter().sniff(fname)
+        >>> Prm().sniff(fname)
         False
         """
 
@@ -64,11 +64,11 @@ class Instprm(Text):
 
         >>> from galaxy.datatypes.sniff import get_test_fname
         >>> fname = get_test_fname('gsas_instrument.instprm')
-        >>> InstrumentParameter2().sniff(fname)
+        >>> Instprm().sniff(fname)
         True
 
         >>> fname = get_test_fname('gsas_instrument.prm')
-        >>> InstrumentParameter2().sniff(fname)
+        >>> Instprm().sniff(fname)
         False
         """
 
@@ -107,7 +107,7 @@ class GsaPowderData(Text):
         >>> GsaPowderData().sniff(fname)
         True
 
-        >>> fname = get_test_fname('gsas_powder.raw')
+        >>> fname = get_test_fname('gsas_instrument.instprm')
         >>> GsaPowderData().sniff(fname)
         False
         """
