@@ -999,6 +999,14 @@
     <datatype extension="gds" type="galaxy.datatypes.tabular:CSV" subclass="true" description="CSV representing GDS parameters."/>
     <datatype extension="feff" type="galaxy.datatypes.tabular:CSV" subclass="true" description="CSV representing summary of FEFF paths."/>
     <datatype extension="feffit" type="galaxy.datatypes.data:Text" subclass="true" description="Report of Artemis FEFFIT."/>
+    <!-- GSASII types-->
+    <datatype extension="gpx" type="galaxy.datatypes.gsas2:Gsas2Project" display_in_upload="true" description="GSASII project file." />
+    <datatype extension="prm" type="galaxy.datatypes.gsas2:Prm" display_in_upload="true" description="GSASII prm instrument parameter file." />
+    <datatype extension="instprm" type="galaxy.datatypes.gsas2:Instprm" display_in_upload="true" description="GSASII instprm instrument parameter file." />
+    <datatype extension="raw" type="galaxy.datatypes.gsas2:RawPowderData" display_in_upload="true" description="GSASII raw powder diffraction data" />
+    <datatype extension="gsa" type="galaxy.datatypes.gsas2:GsaPowderData" display_in_upload="true" description="GSASII gsa powder diffraction data" />
+
+
     <!-- ECOLOGY types -->
     <datatype extension="bil" type="galaxy.datatypes.binary:Binary" mimetype="application/octet-stream" display_in_upload="true" subclass="true" description="ENVI file with band interleave by line (BIL) format"/>
     <datatype extension="hdr" type="galaxy.datatypes.data:Text" mimetype="text/plain" display_in_upload="true" subclass="true" description="ENVI metadata header file"/>
@@ -1016,6 +1024,11 @@
     defined format first, followed by next-most rigidly defined,
     and so on.
     -->
+    <sniffer type="galaxy.datatypes.gsas2:Gsas2Project"/>
+    <sniffer type="galaxy.datatypes.gsas2:RawPowderData"/>
+    <sniffer type="galaxy.datatypes.gsas2:GsaPowderData"/>
+    <sniffer type="galaxy.datatypes.gsas2:Prm"/>
+    <sniffer type="galaxy.datatypes.gsas2:Instprm"/>
     <sniffer type="galaxy.datatypes.plant_tribes:PlantTribesKsComponents"/>
     <sniffer type="galaxy.datatypes.plant_tribes:Smat"/>
     <sniffer type="galaxy.datatypes.mothur:Sabund"/>
