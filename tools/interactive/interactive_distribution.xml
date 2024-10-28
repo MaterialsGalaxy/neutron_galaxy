@@ -1,0 +1,28 @@
+<tool id="interactive_distribution" tool_type="interactive" name="distribution" version="1.0.0">
+    <description>Tuto tool for Gxit</description>
+    <requirements>
+        <container type="docker">milanscd/python-shiny-express-tool:0.1</container>
+    </requirements>
+    <entry_points>
+        <entry_point name="first gxit" requires_domain="True">
+            <port>8765</port>
+            <url>/</url>
+        </entry_point>
+    </entry_points>
+    <command><![CDATA[
+        exec shiny-server 2>&1 > \${LOG_PATH}
+    ]]>
+    </command>
+    <inputs>
+    </inputs>
+    <outputs>
+        <data name="file_output" format="txt" />
+    </outputs>
+    <tests>
+    </tests>
+    <help>
+<![CDATA[
+
+]]>
+    </help>
+</tool>

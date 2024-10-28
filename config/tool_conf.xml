@@ -136,6 +136,7 @@
   </section>
 
   <section id="interactivetools" name="Interactive tools">
+    <tool file="interactive/interactive_distribution.xml" />
     <tool file="interactive/interactive_tool_tabulator.xml" />
     <tool file="interactive/interactivetool_askomics.xml" />
     <tool file="interactive/interactivetool_bam_iobio.xml" />
