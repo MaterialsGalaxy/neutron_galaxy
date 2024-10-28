@@ -10,11 +10,14 @@
         cd app/ &&
         touch $output &&
         mkdir portal &&
+        ln -s $cif_file structure.cif &&
+        ln -s $gsas_file powder.raw &&
+        ln -s $prm_file instrument.prm &&
 
         python $__tool_directory__/gsas2_refinement.py
-                --cif-filename $cif_file
-                --gsas-filename $gsas_file
-                --instrument-params-filename $prm_file
+                --cif-filename structure.cif
+                --gsas-filename powder.raw
+                --instrument-params-filename instrument.prm
                 --scatter-type $scatter_type
                 --bank-id $bank_id
                 --xmin $xmin

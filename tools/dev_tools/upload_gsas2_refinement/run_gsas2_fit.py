@@ -17,7 +17,7 @@ in the tool xml commands to get this to work
 # import G2script as G2sc
 sys.path.append("/home/mkscd/miniconda3/envs/GSASII/GSAS-II/GSASII")  # needed to "find" GSAS-II modules
 # sys.path.append('/home/mkscd/miniconda3/envs/GSASII/bin') # needed to "find" GSAS-II modules
-import GSASIIscriptable as G2sc
+import GSASIIscriptable as G2sc  # type: ignore
 
 
 def run_gsas2_fit(
@@ -103,7 +103,6 @@ def run_gsas2_fit(
     Galaxy changes all the input files into .dat files through the <inputs> in the tool xml
     fix this by reading them in, and saving the encoded text back to the filetypes that GSAS requires.
     Then pass the path of the new files to the GSAS functions.
-    """
 
     # convert prm file from dat back to prm
     with open(prm_fn, "r") as file:
@@ -131,28 +130,25 @@ def run_gsas2_fit(
         cif_path = os.path.abspath("new_cif_file.cif")
         # print(content)
         cif_fn_fixed.close()
-
+    """
     if stype == "N":
         print("heee!!!")
         # debugging print statements
-        print(prm_path)
-        print(gsa_path)
-        print(cif_path)
         print(bank)
         # prmFile = "pdfitc/utils/NOMAD_2019B_Si_sixbanks_Shifter_instrument_file.prm"
-        hist1 = gpx.add_powder_histogram("new_pwdr_file.raw", "new_param_file.prm", databank=bank, instbank=bank)
+        hist1 = gpx.add_powder_histogram(gsa_fn, prm_fn, databank=bank, instbank=bank)
         print("now!")
         hist1.set_refinements({"Limits": [xmin, xmax]})
     if stype == "X":
         print("here! x-ray!!")
         # prmFile = "pdfitc/utils/PDFNSLSII.instprm"
-        hist1 = gpx.add_powder_histogram("new_pwdr_file.raw", "new_param_file.prm")
+        hist1 = gpx.add_powder_histogram(gsa_fn, prm_fn)
         hist1.set_refinements({"Limits": [xmin, xmax]})
 
     hists.append(hist1)
 
     # step 2: add a phase and link it to the previous histograms
-    _ = gpx.add_phase("new_cif_file.cif", phasename="structure", fmthint="CIF", histograms=hists)
+    _ = gpx.add_phase(structure_fn, phasename="structure", fmthint="CIF", histograms=hists)
     print("phase loaded")
     cell_i = gpx.phase("structure").get_cell()
 

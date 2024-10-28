@@ -163,17 +163,8 @@ def run_gsas2_fit(
     refs = gpx.histogram(0).reflections()
     ref_list = refs[gpx.phases()[0].name]["RefList"]
 
-    # output_cif_fn = os.path.join(os.getcwd(), 'data/bragg_gsasii/', output_stem_fn + "_refined.cif")
     output_cif_fn = os.path.join(os.getcwd(), "portal/", output_stem_fn + "_refined.cif")
     gpx.phases()[0].export_CIF(output_cif_fn)
     cell_r = gpx.phases()[0].get_cell()
-
-    # header = "Rw = {} \nx           ycalc           y           dy           bkg".format(rw)
-    # np.savetxt(f"{output_stem_fn}bank{str(bank)}.dat",
-    #            np.transpose([x, ycalc, y, dy, bkg]),
-    #            fmt = '%f', delimiter=' ', header = header)
-    # df = pd.DataFrame(
-    #     {"rw": rw, "x": x, "y": y, "ycalc": ycalc, "dy": dy, "bkg": bkg})
-    # df.update(cell)
 
     return rw, x, y, ycalc, dy, bkg, cell_i, cell_r, ref_list

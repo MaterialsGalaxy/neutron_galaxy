@@ -29,3 +29,4 @@ gsas2_refinement_sample_instrument_prms is a galaxy tool with scripts written in
 - will have to add a parser method to input lists for each phase / histogram, or have all the inputs create an input text file read into the script
 - python script works locally and any added refinement parameters remain checked in the output gpx. For sequences of refinements important to remember whats checked.
 - tool also works locally. Need to add the config file functionality .  
+- i think the lst file has all the config that we need. 
