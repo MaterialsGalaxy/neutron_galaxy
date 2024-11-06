@@ -14,7 +14,7 @@
             <param id="require_container">true</param>
             <param id="container_monitor">true</param>
             <param id="docker_set_user"></param>
-            <param id="docker_run_extra_arguments">--add-host localhost:host-gateway</param>
+            <param id="docker_run_extra_arguments">--add-host localhost:host-gateway</param> 
         </destination>
         <destination id="docker_dispatch" runner="dynamic">
             <param id="type">docker_dispatch</param>
