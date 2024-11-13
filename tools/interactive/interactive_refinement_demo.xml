@@ -4,7 +4,7 @@
         <container type="docker">milanscd/interactive_gsas2_refinement_demo:0.1.0</container>
     </requirements>
     <entry_points>
-        <entry_point name="Interactive_refinement" requires_domain="True">
+        <entry_point name="Interactive_refinement" requires_domain="False" requires_path_in_url="False" requires_path_in_header_named="refinement-header">
             <port>8765</port>
             <url>/</url>
         </entry_point>
@@ -33,8 +33,6 @@
     <tests>
     </tests>
     <help>
-<![CDATA[
-
-]]>
+        <![CDATA[]]>
     </help>
 </tool>

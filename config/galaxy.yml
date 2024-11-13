@@ -2,7 +2,8 @@ gravity:
   gx_it_proxy:
     enable: true
     port: 4002
-
+    verbose: true
+    ip: localhost
   #handlers:
   #  handler:
   #    processes: 3
@@ -13,6 +14,7 @@ gravity:
 galaxy:
   interactivetools_enable: true
   interactivetools_map: database/interactivetools_map.sqlite
+  admin_users: patrick.austin@stfc.ac.uk,subindev.devadasan@stfc.ac.uk,leandro.liborio@stfc.ac.uk,milan.kumar@stfc.ac.uk
 
   # outputs_to_working_directory will provide you with a better level of isolation. It is highly recommended to set
   # this parameter with InteractiveTools.
@@ -23,8 +25,8 @@ galaxy:
   # for an example.
   # In the local development case you should use the `http` protocol (e.g http://localhost:8080) to access
   # your Galaxy, so saving notebooks doesn't fail due to invalid certificates.
-  galaxy_infrastructure_url: http://localhost:8080
+  galaxy_infrastructure_url: http://host-172-16-101-76.nubes.stfc.ac.uk:80
 
   # Do not set the following 2 options if you are using an upstream proxy server like nginx
-  interactivetools_upstream_proxy: false
+  interactivetools_upstream_proxy: true
   interactivetools_proxy_host: localhost:4002
