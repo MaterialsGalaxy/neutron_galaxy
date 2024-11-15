@@ -95,7 +95,7 @@ def run_gsas2_fit(
     #    h.setHistEntryValue(['Sample Parameters', 'DisplaceX'], 0.001)
     # can also use h.getHistEntryList(keyname='Sample Parameters') to get a list of the values
 
-    # set instrument and sample values 
+    # set instrument and sample values
     # get the histogram (for a single powder data file the id is 0)
     h = gpx.histograms()[0]
 
@@ -149,9 +149,8 @@ def run_gsas2_fit(
                         instdictfull)
 
     print(h.getHistEntryValue(['Instrument Parameters'])[0], "\n")
-    
 
-    #  instrument and sample refinement steps by default will apply to all phases and histograms
+    # instrument and sample refinement steps by default will apply to all phases and histograms
     samp_ref_list = samp_refs.split(',')
     """
     samplerefdict = {

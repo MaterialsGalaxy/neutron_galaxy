@@ -1,10 +1,5 @@
 import os
 import sys
-from typing import (
-    Any,
-    Dict,
-    Union,
-)
 
 import numpy as np
 
@@ -22,46 +17,36 @@ import GSASIIscriptable as G2sc  # type: ignore
 
 def run_gsas2_fit(
     project_fn,
-    eqn_var_list,
-    eqn_coef_list,
-    eqn_tot,
-    equiv_var_list,
-    equiv_coef_list,
+    atom_labels,
+    atom_refinements,
     output_stem_fn,
     output_path,
     num_cycles=5,
 ):
-    print(eqn_var_list, "\n")
-    print(eqn_coef_list, "\n")
-    print(eqn_tot, "\n")
-    print(equiv_var_list, "\n")
-    print(equiv_coef_list, "\n")
+    print(atom_labels, "\n")
+    print(atom_refinements, "\n")
+
+    # validate the atom_refinement inputs
+
+    atom_refinements = [s.replace(",", "").strip() for s in atom_refinements]
+
+    print(atom_refinements, "\n")
 
     """
     Parameters
     ----------
-    structure_fn: str
-        input structure cif filename.
-    gsa_fn: str
-        input gsa filename.
-    prm_fn: str
-        input instrument profile filename.
+    project_fn: str
+        input GSAS .gpx project file name
+    atom_labels: list [str]
+        input atom labels
+    atom_refinements: list [str]
+        input atom refinement flags
     output_stem_fn: str
         output stem filename.
-    stype: str
-        scattering type
-    banks: str
-        bank 1-6.
-    xmin: float
-        minimum x value
-    xmax: float
-        maximum x value
     output_path: str
         path to put output files
     num_cycles: int
         number of refinement cycles
-    init_vals: dict
-        initial input values for refinement
 
     Returns
     -------
@@ -96,25 +81,24 @@ def run_gsas2_fit(
     else:
         print("no project created at path", proj_path)
 
-
     cell_i = gpx.phases()[0].get_cell()
 
     # step 3: increase # of cycles to improve convergence
     gpx.data["Controls"]["data"]["max cyc"] = num_cycles
 
-    # add equation constraints
-    for i in range(len(eqn_var_list)):
-        gpx.add_EqnConstr(eqn_tot[i], eqn_var_list[i], multlist=eqn_coef_list[i])
+    # create atoms refinement dictionary
 
-    # add equivalence constraints
-    for i in range(len(equiv_var_list)):
-        gpx.add_EquivConstr(equiv_var_list[i], multlist=equiv_coef_list[i])
+    atom_dict = dict(zip(atom_labels, atom_refinements))
+
+    # create refinement dictionary
+
+    refdict = {"set": {'Atoms': atom_dict}}
 
     # before fit, save project file first.
     # Then in the future, the refined project file will update this one.
     gpx.save(os.path.join(os.getcwd(), "portal/", output_stem_fn + "_refined.gpx"))
 
-    gpx.refine()
+    gpx.do_refinements([refdict])
     print("================")
 
     # save results data

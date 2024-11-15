@@ -85,52 +85,15 @@ def run_gsas2_fit(
     if os.path.exists(proj_path):
         os.remove(proj_path)
     gpx = G2sc.G2Project(newgpx=proj_path)
-
+    gpx.save()
     # check if the project got created
     if os.path.exists(proj_path):
         print("created project at path:", proj_path)
     else:
         print("no project created at path", proj_path)
-    """
-    Here the project does get created even though the output prints the second statement
-    something is wrong with the output paths in general
-    """
 
     # add six bank histograms to the project
     hists = []
-
-    """
-    Galaxy changes all the input files into .dat files through the <inputs> in the tool xml
-    fix this by reading them in, and saving the encoded text back to the filetypes that GSAS requires.
-    Then pass the path of the new files to the GSAS functions.
-
-    # convert prm file from dat back to prm
-    with open(prm_fn, "r") as file:
-        content = file.read()
-        prm_fn_fixed = open("new_param_file.prm", "w")
-        prm_fn_fixed.write(content)
-        prm_path = os.path.abspath("new_param_file.prm")
-        # print(content)
-        prm_fn_fixed.close()
-
-    # convert data file back to raw
-    with open(gsa_fn, "r") as file:
-        content = file.read()
-        gsa_fn_fixed = open("new_pwdr_file.raw", "w")
-        gsa_fn_fixed.write(content)
-        gsa_path = os.path.abspath("new_pwdr_file.raw")
-        # print(content)
-        gsa_fn_fixed.close()
-
-    # convert dat file back to CIF
-    with open(structure_fn, "r") as file:
-        content = file.read()
-        cif_fn_fixed = open("new_cif_file.cif", "w")
-        cif_fn_fixed.write(content)
-        cif_path = os.path.abspath("new_cif_file.cif")
-        # print(content)
-        cif_fn_fixed.close()
-    """
     if stype == "N":
         print("heee!!!")
         # debugging print statements
@@ -177,7 +140,7 @@ def run_gsas2_fit(
         }
     # refinement step 3: refine lattice parameter and Uiso refinement (Phase)
     refdict3 = {
-        "set": {"Atoms": {"all": "U"}, "Cell": True},  # set the Uiso and lattice parameters to be refined
+        "set": {"Cell": True},  # set the Uiso and lattice parameters to be refined
         "call": HistStats,
     }
 
@@ -205,13 +168,5 @@ def run_gsas2_fit(
     output_cif_fn = os.path.join(os.getcwd(), "portal/", output_stem_fn + "_refined.cif")
     gpx.phase("structure").export_CIF(output_cif_fn)
     cell_r = gpx.phase("structure").get_cell()
-
-    # header = "Rw = {} \nx           ycalc           y           dy           bkg".format(rw)
-    # np.savetxt(f"{output_stem_fn}bank{str(bank)}.dat",
-    #            np.transpose([x, ycalc, y, dy, bkg]),
-    #            fmt = '%f', delimiter=' ', header = header)
-    # df = pd.DataFrame(
-    #     {"rw": rw, "x": x, "y": y, "ycalc": ycalc, "dy": dy, "bkg": bkg})
-    # df.update(cell)
 
     return rw, x, y, ycalc, dy, bkg, cell_i, cell_r, ref_list
