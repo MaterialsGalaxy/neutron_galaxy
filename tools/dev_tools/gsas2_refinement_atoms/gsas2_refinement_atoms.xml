@@ -2,9 +2,8 @@
     <description>Tool to set atom refinement flags for Rietveld refinement in GSASII for neutron powder diffraction analysis</description>
     <requirements></requirements>
     <command detect_errors="exit_code"><![CDATA[
-        which conda &&
-        conda init &&
-        source ~/.bashrc &&
+        conda init bash &&
+        source ../home/.bashrc &&
         conda activate GSASII &&
         mkdir app &&
         cd app/ &&

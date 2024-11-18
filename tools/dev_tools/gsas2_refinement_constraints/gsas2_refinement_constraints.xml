@@ -2,9 +2,8 @@
     <description>Tool to upload files for neutron powder diffraction analysis in GSASII and perform an initial Rietveld refinement</description>
     <requirements></requirements>
     <command detect_errors="exit_code"><![CDATA[
-        which conda &&
-        conda init &&
-        source ~/.bashrc &&
+        conda init bash &&
+        source ../home/.bashrc &&
         conda activate GSASII &&
         mkdir app &&
         cd app/ &&

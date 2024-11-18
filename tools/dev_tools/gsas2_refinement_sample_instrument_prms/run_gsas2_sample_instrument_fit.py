@@ -10,7 +10,7 @@ locally i added:
 in the tool xml commands to get this to work
 """
 # import G2script as G2sc
-sys.path.append("/home/mkscd/miniconda3/envs/GSASII/GSAS-II/GSASII")
+sys.path.append("/home/dxp41838/miniconda3/envs/GSASII/GSAS-II/GSASII")
 # needed to "find" GSAS-II modules
 import GSASIIscriptable as G2sc  # type: ignore
 
