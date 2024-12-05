@@ -6,6 +6,7 @@
     <tool file="dev_tools/gsas2_refinement_sample_instrument_prms/sample_prms_gsas2_refinement.xml" />
     <tool file="dev_tools/gsas2_refinement_constraints/gsas2_refinement_constraints.xml" />
     <tool file="dev_tools/gsas2_refinement_atoms/gsas2_refinement_atoms.xml" />
+    <tool file="dev_tools/dev_interactive_refinement_demo.xml" />
 
   </section>
   <section id="getext" name="Get Data">
