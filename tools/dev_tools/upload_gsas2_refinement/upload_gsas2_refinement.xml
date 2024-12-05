@@ -2,8 +2,9 @@
     <description>Tool to upload files for neutron powder diffraction analysis in GSASII and perform an initial Rietveld refinement</description>
     <requirements></requirements>
     <command detect_errors="exit_code"><![CDATA[
-        conda init bash &&
-        source ../home/.bashrc &&
+        which conda &&
+        conda init &&
+        source ~/.bashrc &&
         conda activate GSASII &&
         mkdir app &&
         cd app/ &&
@@ -19,8 +20,6 @@
                 --instrument-params-filename instrument.prm
                 --scatter-type $scatter_type
                 --bank-id $bank_id
-                --xmin $xmin
-                --xmax $xmax
                 --output-directory /portal
         > >(tee -a $output) 2> >(tee -a $output >&2)
     ]]></command>
@@ -34,8 +33,6 @@
             <option value="X" selected="false">X-ray</option>
         </param>
         <param name="bank_id" type="integer" label="Bank ID" value="0" />
-        <param name="xmin" type="float" label="Left bound" value="0" />
-        <param name="xmax" type="float" label="Right bound" value="0" />
     </inputs>
     <outputs>
         <data format="txt" name="output" label="GSAS2 console output"></data>
