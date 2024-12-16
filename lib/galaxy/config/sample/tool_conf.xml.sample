@@ -7,7 +7,7 @@
     <tool file="dev_tools/gsas2_refinement_constraints/gsas2_refinement_constraints.xml" />
     <tool file="dev_tools/gsas2_refinement_atoms/gsas2_refinement_atoms.xml" />
     <tool file="dev_tools/gsas2_gpx_refinement/gsas2_gpx_refinement.xml" />
-    <tool file="dev_tools/dev_interactive_refinement_demo.xml" />
+    <tool file="dev_tools/interactive_refinement/dev_interactive_refinement_demo.xml" />
 
   </section>
   <section id="getext" name="Get Data">
