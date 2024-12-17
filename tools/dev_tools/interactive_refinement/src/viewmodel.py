@@ -492,6 +492,12 @@ def loadhist(histname):
         # update the plots and the UI
         update_plot(gpx(), histname)
 
+        lim_min = min(x())
+        lim_max = max(x())
+        lim_low = h.Limits("lower")
+        lim_up = h.Limits("upper")
+        ui.update_slider("limits", min=lim_min, max=lim_max, value=[lim_low, lim_up])
+
         # build the new UI
         buildsamppage()
         buildinstpage()
@@ -510,12 +516,6 @@ def update_plot(gpx, histname):
     ycalc.set(tycalc)
     dy.set(tdy)
     bkg.set(tbkg)
-
-    lim_min = min(tx)
-    lim_max = max(tx)
-    lim_low = h.Limits("lower")
-    lim_up = h.Limits("upper")
-    ui.update_slider("limits", min=lim_min, max=lim_max, value=[lim_low, lim_up])
 
 
 def loadphase():
