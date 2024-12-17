@@ -1,5 +1,4 @@
 from bioblend.galaxy import GalaxyInstance
-import subprocess
 import logging
 import os
 
