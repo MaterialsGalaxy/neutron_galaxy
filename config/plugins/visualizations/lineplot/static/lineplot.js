@@ -1,5 +1,11 @@
-function loadCSV(csv_file){
-    d3.csv(csv_file).then(data => {
+function loadFile(file_url,extension){
+    if (extension == "tabular"){
+        dataLoader = d3.tsv;
+    }
+    else if (extension == "csv"){
+        dataLoader = d3.csv;
+    }
+    dataLoader(file_url).then(data => {
         if (data.length > 0) {
             const columnHeaders = Object.keys(data[0]);
     
@@ -14,7 +20,7 @@ function loadCSV(csv_file){
             ySelect.property("value", columnHeaders[1]);
     
             // Define margins
-            const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+            const margin = { top: 20, right: 30, bottom: 40, left: 60 };
     
             function renderChart() {
                 // Get selected columns

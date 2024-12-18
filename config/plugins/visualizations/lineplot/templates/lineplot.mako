@@ -4,8 +4,8 @@
     root = h.url_for( '/static/' )
     home = h.url_for( '/' )
     csv_file = f"{root}datasets/{hdadict['id']}/your_dataset.csv"
-    ##${h.javascript_link( root + 'plugins/visualizations/lineplot/static/lineplot.js' )}
-    file_url =home +'datasets/'+hdadict['id']+"/display?to_ext="+".csv"
+    file_url = home+'api/datasets/'+hdadict['id']+"/display?to_ext="+hdadict['file_ext']
+    file_ext = hdadict['file_ext']
 
 %>
 <!DOCTYPE HTML>
@@ -42,7 +42,7 @@
         <svg></svg>
         ${h.javascript_link( root + 'plugins/visualizations/lineplot/static/lineplot.js' )}
         <script>
-        loadCSV('${file_url}');
+        loadFile('${file_url}','${file_ext}');
         </script>
     </body>
 </html>
