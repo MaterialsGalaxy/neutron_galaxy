@@ -9,7 +9,6 @@ from gsasIImodel import (
     hist_export,
     gsas_load_gpx,
     load_phase_constraints,
-    load_histogram_parameters,
     GSAS2Project,
 )
 import plotly.express as px
@@ -26,14 +25,7 @@ these have to be passed as inputs to the function."""
 gpx = reactive.value()
 og_gpx = reactive.value()
 current_gpx_fname = reactive.value()
-inst_ref_list = reactive.value()
-inst_params = reactive.value(None)
-samp_ref_list = reactive.value()
-sample_params = reactive.value(None)
 input_gpx_file = reactive.value()
-inst_choices = reactive.value()
-samp_choices = reactive.value()
-samp_UI_list = reactive.value([])
 
 num_bkg_coefs = reactive.value()
 current_bkg_func = reactive.value()
@@ -101,20 +93,22 @@ background_functions = {
 
 
 def update_nav(tab: str) -> None:
-    """
-    updates the tab viewed in the UI.
-    The main UI uses a hidden navset so the menus
-    can be navigated using the sidebar
+    """changes the nvaigation tab in the UI
 
+    Args:
+        tab (str): the id of the tab to change to
     """
     # set the tab in the main view from the sidebar controls
     ui.update_navs(id="tab", selected=tab)
 
 
 def add_constr(ctype: str, df: pd.DataFrame, var_df: pd.DataFrame) -> None:
-    """
-    wrapper function for adding equivalence or equation constraints
-    equation constraints are forced to have a total of 1
+    """adds a valid phase constraint to the GSASII project.
+
+    Args:
+        ctype (str): denotes the type of phase constraint
+        df (pd.DataFrame): contains the coefficients and variables' codes for the constraint
+        var_df (pd.DataFrame): a dataframe of variables which are allowed to be in the constraint
     """
     # add constraints to constraints list and to gpx
     constr_vars = df["code"].tolist()
@@ -145,10 +139,14 @@ def add_constr(ctype: str, df: pd.DataFrame, var_df: pd.DataFrame) -> None:
 
 
 def build_constraints_df(phase_name: str) -> pd.DataFrame:
-    """
-    builds/populates the Dataframe of possible parameters
-    to choose for phase constraints
-    used so users can make selections for constraint inputs
+    """Builds a Dataframe of variables which are allowed to be added to a phase constraint.
+    This data frame contains the variables' codes, phasenames, parameters and atom labels.
+
+    Args:
+        phase_name (str): the name of the phase of interest
+
+    Returns:
+        pd.DataFrame: The dataframe of variables
     """
     # initialise constraints
     constraint_cols = ["code", "phase", "parameter", "atom"]
@@ -177,15 +175,23 @@ def build_constraints_df(phase_name: str) -> pd.DataFrame:
     return phase_constr_df
 
 
-def remove_constraint(id: str) -> None:
+def remove_constraint(id: int) -> None:
+    """removes a phase constraint from the project with the given id
+
+    Args:
+        id (str): the index of the chosen constraint in the list of the project's phase constraints.
+    """
     constraints = load_phase_constraints(gpx())
     if isinstance(id, int) and id < len(constraints):
         constraints.pop(id)
 
 
 def show_phase_constr() -> pd.DataFrame:
-    """
-    TBC reads constraint data from the gpx and re arranges them for UI output
+    """Reads the current phase constraints from the GSASII project
+    and generates a readable table to be output to the UI.
+
+    Returns:
+        pd.DataFrame: A table of current phase constraints in the project
     """
     gpx().index_ids()
     constraints = load_phase_constraints(gpx())
@@ -224,9 +230,12 @@ def show_phase_constr() -> pd.DataFrame:
 
 
 def save_atom_table(df: pd.DataFrame, phase_name: str) -> None:
-    """
-    saves the edited atom dataframe
-    currently only saves refinement flag edits to the gpx
+    """Saves refinement flag settings for the phase atoms from the UI
+    to the GSASII project object.
+
+    Args:
+        df (pd.DataFrame): The dataframe of the phase atoms
+        phase_name (str): the name of the phase edited in the GSASII project
     """
 
     phase = gpx().phase(phase_name)
@@ -245,10 +254,15 @@ def save_atom_table(df: pd.DataFrame, phase_name: str) -> None:
 
 
 def atom_data(phase_name: str) -> pd.DataFrame:
-    """
-    generates a pandas dataframe containing data for atoms
-    in the selected phase.
-    used to render in the phase atom UI.
+    """Generates a dataframe for the atoms in the phase.
+    The dataframe contains the atoms': labels, types, refinement flags, unit cell coordinates,
+    site occupation fraction, multiplicity, and atomic displacement.
+
+    Args:
+        phase_name (str): name of the phase the atoms belong to
+
+    Returns:
+        pd.DataFrame: dataframe for the atoms in the phase
     """
     phase = gpx().phase(phase_name)
 
@@ -286,6 +300,11 @@ def load_bkg_data(hist_name: str) -> list[list, dict]:
 
 
 def build_bkg_page(hist_name: str) -> None:
+    """updates the UI elements for the histogram background.
+
+    Args:
+        hist_name (str): name of the histogram which provides the data
+    """
     bkg_data = load_bkg_data(hist_name)
     ui.update_select("background_function", selected=bkg_data[0][0])
     ui.update_checkbox("bkg_refine", value=bkg_data[0][1])
@@ -293,18 +312,39 @@ def build_bkg_page(hist_name: str) -> None:
 
 
 def set_bkg_func(hist_name: str, func_name: str) -> None:
+    """sets the background function type for the chosen histogram
+    in the GSASII project object
+
+    Args:
+        hist_name (str): name of the histogram to make changes to
+        func_name (str): name of the background function
+    """
     if hist_name != "init":
         bkg_data = load_bkg_data(hist_name)
         bkg_data[0][0] = func_name
 
 
 def set_bkg_refine(hist_name: str, flag: bool) -> None:
+    """Sets the refinement flag on or off for the chosen histogram in
+    the GSASII project.
+
+    Args:
+        hist_name (str): the name of the histogram being edited
+        flag (bool): the value of the refinement flag
+    """
     if hist_name != "init":
         bkg_data = load_bkg_data(hist_name)
         bkg_data[0][1] = flag
 
 
 def set_bkg_coefs(hist_name: str, num_coefs: int) -> None:
+    """sets the number of background coefficients for the chosen histogram
+    in the GSASII project object
+
+    Args:
+        hist_name (str): The name of the histogram being edited
+        num_coefs (int): the new number of background coefficients being set
+    """
     if hist_name != "init":
         bkg_data = load_bkg_data(hist_name)
         bkg_data[0][2] = num_coefs
@@ -314,6 +354,14 @@ def set_bkg_coefs(hist_name: str, num_coefs: int) -> None:
 
 
 def build_bkg_coef_df(hist_name: str) -> pd.DataFrame:
+    """generates a dataframe of the current background coefficients in the selected histogram
+
+    Args:
+        hist_name (str): Name of the histogram being examined
+
+    Returns:
+        pd.DataFrame: A table of coefficients to be output to the UI
+    """
     if hist_name != "init":
         bkg_data = load_bkg_data(hist_name)
         coefs = bkg_data[0][3:]
@@ -322,6 +370,13 @@ def build_bkg_coef_df(hist_name: str) -> pd.DataFrame:
 
 
 def save_bkg_coefs(hist_name: str, coefs: list) -> None:
+    """Saves a background coefficient list to the selected histogram
+    in the GSASII Project.
+
+    Args:
+        hist_name (str): name of the histogram being edited
+        coefs (list): the new list of background coefficients
+    """
     if hist_name != "init":
         bkg_data = load_bkg_data(hist_name)
         try:
@@ -333,142 +388,181 @@ def save_bkg_coefs(hist_name: str, coefs: list) -> None:
             bkg_data[0][3:] = new_coefs
 
 
-def build_inst_page() -> None:
-    """
-    in development
-    generate the instrument parameter UI dynamically
-    needed as Continuous Wave and Time of Flight experiments
-    have different parameters
-    """
-    # update the refinement flags choices too
-    # and filter which inputs to show numerically/text
-    ui.update_selectize(
-        "inst_selection", choices=inst_choices(), selected=inst_ref_list()
-    )
-    # previous = "inst_selection"
+def build_instrument_df(hist_name) -> pd.DataFrame:
+    # get the instrument parameters from the GSASII project object
+    h = gpx().histogram(hist_name)
+    instrument_parameters:dict = h.getHistEntryValue(["Instrument Parameters"])[0]
+    instrument_df = pd.DataFrame(columns=["Parameter", "Value"])
 
-    # generate the new UI elements
-    # Ideally generate all directly from the gsas histogram object's
-    # instrument parameter dictionary
-    # finds previous element from selector, inserts new element after it
-    # requires removing too, unclear how this works
-
-    previous = "instruments"
-
-    # could make a dictionary of param keys to ui labels
-
-    for param, val in inst_params().items():
-        if isinstance(val, list):
-            if isinstance(val[0], float) or isinstance(val[1], float):
-                if param != "SH/L" and param != "Polariz.":
-
-                    ui.insert_ui(
-                        ui.input_numeric(id=param, label=param, value=val[1]),
-                        selector="#" + previous,
-                        where="afterEnd",
-                    )
-                    previous = param
-
-
-def build_samp_page() -> None:
-    # add updating the flag choices and filter which inputs to show
-    # numerically or text aswell.
-    ui.update_selectize(
-        "samp_selection", choices=samp_choices(), selected=samp_ref_list()
-    )
-    previous = "sample"
-    sample_hidden_list = [
-        "Materials",
-        "Gonio. radius",
-        "FreePrm1",
-        "FreePrm2",
-        "FreePrm3",
-        "ranId",
-        "Time",
-        "Thick",
-        "Constrast",
-        "Trans",
-        "SlitLen",
-        "Shift",
-        "Transparency",
-        "Temperature",
-        "Pressure",
-        "Omega",
-        "Chi",
-        "Phi",
-        "Azimuth",
-    ]
-    sample_UI_list = []
-    for param, val in sample_params().items():
-        if param not in sample_hidden_list:
+    for param, val in instrument_parameters.items():
+        no_input_list=["Source"]
+        if param not in no_input_list:
             if isinstance(val, list):
-                if isinstance(val[0], float):
-                    ui.insert_ui(
-                        ui.input_numeric(id=param, label=param, value=val[0]),
-                        selector="#" + previous,
-                        where="afterEnd",
-                    )
-                    sample_UI_list.append(param)
-                    previous = param
+                df_value = val[1]
+            else:
+                continue
+            new_row = {"Parameter": param, "Value": df_value}
+            instrument_df.loc[len(instrument_df)] = new_row
 
-            if isinstance(val, float):
-                ui.insert_ui(
-                    ui.input_numeric(id=param, label=param, value=val),
-                    selector="#" + previous,
-                    where="afterEnd",
-                )
-                sample_UI_list.append(param)
-                previous = param
-
-            if param == "InstrName":
-                ui.insert_ui(
-                    ui.input_text(id=param, label="Instrument Name", value=val),
-                    selector="#" + previous,
-                    where="afterEnd",
-                )
-                sample_UI_list.append(param)
-                previous = param
-
-            if param == "Type":
-                ui.insert_ui(
-                    ui.input_select(
-                        id=param,
-                        label="Type:",
-                        choices={
-                            "Debye-Scherrer": "Debye-Scherrer",
-                            "Bragg-Brentano": "Bragg-Brentano",
-                        },
-                        selected=val,
-                    ),
-                    selector="#" + previous,
-                    where="afterEnd",
-                )
-                sample_UI_list.append(param)
-                previous = param
-    samp_UI_list.set(sample_UI_list)
+    return instrument_df
 
 
-def remove_samp_inputs() -> None:
-    if sample_params() is not None:
-        for param in sample_params().keys():
-            ui.remove_ui(selector="div:has(> " + "#" + param + ")")
+def save_instrument_parameters(hist_name: str, instrument_df: pd.DataFrame, instrument_refinements:list) -> None:
+    h = gpx().histogram(hist_name)
+    instrument_parameters = h.getHistEntryValue(["Instrument Parameters"])[0]
+    # set all flags to false
+    for param, val in instrument_parameters.items():
+        if isinstance(val, list) and len(val) == 3:
+            if val[2]:
+                val[2] = False
+
+    # set the new chosen flags
+    for param in instrument_refinements:
+        instrument_parameters[param][2] = True
+
+    # copy in parameter values row by row
+    for row in instrument_df.itertuples():
+        param = row.Parameter
+        df_value = row.Value
+        val = instrument_parameters[param]
+
+        # type validation
+        if isinstance(val, list):
+            # set values in GSASII project object directly
+            val[1] = type(val[1])(df_value)
+        # else:
+            # these parameters have to be set in the project object through the setHistEntryValue method
+            # h.setHistEntryValue(["Instrument Parameters", param], type(val)(df_value))
 
 
-def remove_inst_inputs() -> None:
-    if inst_params() is not None:
-        for param in inst_params().keys():
-            ui.remove_ui(selector="div:has(> " + "#" + param + ")")
+def update_instrument_refinements(hist_name:str)-> None:
+    h = gpx().histogram(hist_name)
+    instrument_parameters= h.getHistEntryValue(["Instrument Parameters"])[0]
+
+    # populating list of sample refinements that are already active
+    instrument_refinement_choices = {}
+    instrument_refinements = []
+    no_refinements= ["Bank", "Source","Type"]
+    for param, val in instrument_parameters.items():
+        # set sample choices dict for UI
+        if param not in no_refinements:
+            if isinstance(val, list) and len(val) == 3:
+                if isinstance(val[1], (int, float)):
+                    instrument_refinement_choices[param] = param
+                    if val[2]:
+                        instrument_refinements.append(param)
+    
+    ui.update_selectize(
+        "inst_selection",
+        choices=instrument_refinement_choices,
+        selected=instrument_refinements, 
+    )
+
+
+def build_sample_df(hist_name:str) -> pd.DataFrame:
+    """Builds a dataframe of the selected histograms Sample Parameters to be output to the UI.
+
+    Args:
+        hist_name (str): Name of the selected histogram.
+
+    Returns:
+        pd.DataFrame: Table of Sample parameter values to be output to the UI.
+    """
+
+    # get the sample parameters from the GSASII project object
+    h = gpx().histogram(hist_name)
+    sample_parameters:dict = h.getHistEntryValue(["Sample Parameters"])
+    sample_df = pd.DataFrame(columns=["Parameter", "Value"])
+
+    # populate the dataframe with sample parameters and values
+    for param, val in sample_parameters.items():
+        no_input_list = ["Materials"]
+        if param not in no_input_list:
+
+            if isinstance(val, list):
+                df_value = val[0]
+            elif isinstance(val, (str, float, int)):
+                df_value = val
+            else:
+                continue
+
+            new_row = {"Parameter": param, "Value": df_value}
+            sample_df.loc[len(sample_df)] = new_row
+
+    return sample_df
+
+
+def save_sample_parameters(hist_name: str, sample_df: pd.DataFrame, sample_refinements:list) -> None:
+    """saves sample parameters from an input dataframe to the selected histogram in
+    the GSASII project object.
+
+    Args:
+        hist_name (str): name of the selected histogram
+        sample_df (pd.DataFrame): Table of sample parameter values input from the UI
+    """
+    h = gpx().histogram(hist_name)
+    sample_parameters = h.getHistEntryValue(["Sample Parameters"])
+
+    # set all flags to false
+    for param, val in sample_parameters.items():
+        if isinstance(val, list):
+            if val[1]:
+                val[1] = False
+
+    # set the new chosen flags
+
+    for param in sample_refinements:
+        sample_parameters[param][1] = True
+
+    # copy in parameter values row by row
+    for row in sample_df.itertuples():
+        param = row.Parameter
+        df_value = row.Value
+        val = sample_parameters[param]
+
+        # type validation
+        if isinstance(val, list):
+            # set values in GSASII project object directly
+            val[0] = type(val[0])(df_value)
+        else:
+            # these parameters have to be set in the project object through the setHistEntryValue method
+            h.setHistEntryValue(["Sample Parameters", param], type(val)(df_value))
+
+
+def update_sample_refinements(hist_name: str) -> None:
+    h = gpx().histogram(hist_name)
+    sample_parameters = h.getHistEntryValue(["Sample Parameters"])
+    
+    # populating list of sample refinements that are already active
+    sample_refinement_choices = {}
+    sample_refinements = []
+    for param, val in sample_parameters.items():
+        # set sample choices dict for UI
+        if isinstance(val, list):
+            if isinstance(val[1], bool):
+                sample_refinement_choices[param] = param
+                if val[1]:
+                    sample_refinements.append(param)
+    
+    # update the UI
+    ui.update_selectize(
+        "samp_selection",
+        choices=sample_refinement_choices,
+        selected=sample_refinements,
+        )
 
 
 def view_hist() -> None:
+    """TBC"""
     # view a specific subtree of the histogram in the histogram tab
     print("select_view_hist()")
 
 
 def load_histogram(hist_name: str) -> None:
-    """
-    loads the selected histogram and updates the UI
-    to reflect the new hsitograms data.
+    """Loads all data for the UI histogram pages and updates the plots
+
+    Args:
+        hist_name (str): name of the selected histogram
     """
     # load the ui for hist data in the project tab
     if hist_name != "init":
@@ -480,19 +574,6 @@ def load_histogram(hist_name: str) -> None:
             options[subheading] = subheading
         select_view_hist.set(options)
         ui.update_select("view_hist_data", choices=select_view_hist())
-        # delete old ui
-        remove_inst_inputs()
-        remove_samp_inputs()
-        # set the new histogram parameters for the UI
-        # add flag choices dicts here
-        hp = load_histogram_parameters(gpx(), hist_name)
-        inst_ref_list.set(hp[0])
-        inst_params.set(hp[1])
-        inst_choices.set(hp[2])
-        samp_ref_list.set(hp[3])
-        sample_params.set(hp[4])
-        samp_choices.set(hp[5])
-        # change how parameters are loaded
 
         # update the plots and the UI
         update_plot(gpx(), hist_name)
@@ -504,15 +585,18 @@ def load_histogram(hist_name: str) -> None:
         ui.update_slider("limits", min=lim_min, max=lim_max, value=[lim_low, lim_up])
 
         # build the new UI
-        build_samp_page()
-        build_inst_page()
+        update_sample_refinements(hist_name)
         build_bkg_page(hist_name)
+        update_instrument_refinements(hist_name)
 
 
 def update_plot(gpx: GSAS2Project, hist_name: str) -> None:
-    """
-    updates plot parameters for the powder hsitogram to ensure the
-    output is not stale
+    """gets the data for plotting the selected histogram from the GSASII project object
+    and sets the corresponding reactive values to store them.
+
+    Args:
+        gpx (GSAS2Project): The GSASII project object of interest
+        hist_name (str): the name of the histogram of interest
     """
     tx, ty, tycalc, tdy, tbkg = hist_export(gpx, hist_name)
     x.set(tx)
@@ -528,14 +612,27 @@ def load_phase() -> None:
 
 
 def set_hist_limits(hist_name: str, limits: list) -> None:
+    """Sets histogram limits overwhich the refinement will be calculated. Changes are saved
+    to the GSASII Project object.
+
+    Args:
+        hist_name (str): name of the histogram being edited
+        limits (list): a list containing the lower and upper limits.
+    """
     h = gpx().histogram(hist_name)
     h.Limits("lower", limits[0])
     h.Limits("upper", limits[1])
 
 
 def plot_powder(hist_name: str, limits: list):
-    """
-    plots the powder histogram data from the current project
+    """generates a plotly express figure for the histogram data with the powder data itself, the refinement fit,
+    the background and the limit lines. The figure is used to output a plot to the UI
+
+    Args:
+        hist_name (str): The name of the histogram the figure is made for
+        limits (list): a list of the lower and upper limits of the refinement
+    Returns:
+        _type_: _description_
     """
     update_plot(gpx(), hist_name)
     pwdr_data = {
@@ -589,9 +686,8 @@ def plot_powder(hist_name: str, limits: list):
 
 
 def update_history() -> None:
-    """
-    fetches history from galaxy to populate load project choices.
-    uses pandas dataframes for shiny output rendering.
+    """gets the galaxy history from the galaxy instance and generates a history table for the UI ouput. This table is set as a reactive variable.
+    Also updates the UI choices for projects to load from the galaxy history.
     """
     print("update_history triggered")
     history = gxhistory.gx_update_history()
@@ -616,15 +712,20 @@ def update_history() -> None:
 
 
 def view_proj() -> None:
+    """tbd"""
     # view project data window TBC
     print("view_proj_choices")
 
 
 def load_project(id: str) -> None:
+    """Loads a GSASII project file from the galaxy history using its galaxy API id.
+    The file is saved in the interactive tool and the other UI pages are updated with
+    the new data from the selected project.
+
+    Args:
+        id (str): _description_
+    """
     if id != "init":
-        # remove any dynamic UI items from previous project
-        remove_inst_inputs()
-        remove_samp_inputs()
 
         # get the file from galaxy and load the gsas project
         hid_and_fn: str = select_gpx_choices()[id]
@@ -664,92 +765,9 @@ def load_project(id: str) -> None:
         load_histogram(list(hist_names.keys())[0])
 
 
-def save_inst_params(app_input) -> None:
-    """
-    collects instrument parameter inputs and saves them to gpx
-    """
-    # change this to change the full dictionary directly
-    # some inputs filtered out so need a reference for which inputs to take
-    hist_name: str = app_input.select_hist()
-    h = gpx().histogram(hist_name)
-    inst_dict_full: dict = h.getHistEntryValue(["Instrument Parameters"])
-    irl: list = app_input.inst_selection()
-    ip: dict = inst_params().copy()
-
-    # set all flags to false
-    for param in ip:
-        if isinstance(ip[param], list):
-            if len(ip[param]) == 3:
-                if ip[param][2]:
-                    inst_dict_full[0][param][2] = False
-
-    # add new refinement flags
-
-    inst_ref_dict = {"Instrument Parameters": irl}
-    h.set_refinements(inst_ref_dict)
-
-    for param in irl:
-        inst_dict_full[0][param][2] = True
-
-    # add new set values
-    for param in ip:
-        if isinstance(ip[param], list):
-            if isinstance(ip[param][0], float) or isinstance(ip[param][1], float):
-                if param != "Polariz." and param != "SH/L":
-                    inst_dict_full[0][param][1] = getattr(app_input, param)()
-
-    h.setHistEntryValue(["Instrument Parameters"], inst_dict_full)
-    inst_params.set(ip)
-    inst_ref_list.set(irl)
-
-
-def save_samp_params(app_input) -> None:
-    """
-    collects sample parameter inputs and saves them to gpx
-    """
-    hist_name: str = app_input.select_hist()
-    h = gpx().histogram(hist_name)
-    sp: dict = sample_params().copy()
-
-    # gets sample refinement input
-    srl: list = app_input.samp_selection()
-
-    # set all flags to false
-    for param in sp:
-        if isinstance(sp[param], list):
-            if sp[param][1]:
-                sp[param][1] = False
-
-    # set the new chosen flags
-
-    for param in srl:
-        sp[param][1] = True
-
-    # set the new values
-    for param in sp:
-        if param in samp_UI_list():
-
-            if isinstance(sp[param], list):
-                sp[param][0] = getattr(app_input, param)()
-                print("a")
-            elif param == "Type":
-                sp[param] = getattr(app_input, param)()
-            else:
-                print("b")
-                sp[param] = getattr(app_input, param)()
-
-            h.setHistEntryValue(["Sample Parameters", param], sp[param])
-
-    # update the reactive values / global values
-    samp_ref_list.set(srl)
-    sample_params.set(sp)
-
-
 def submit_out() -> None:
-    """
-    saves project changes to file and submits to galaxy history
-    runs static tool GSAS2_refinement_executor in the background
-    loads the refined file back into the interactive tool on completion
+    """saves project changes to the .gpx file and submits any changes to the original file as a delta file to the galaxy history.
+    The static tool GSAS2_refinement_executor is then run in the background and the refined file is loaded back into the interactive tool on completion.
     """
     gpx().save()
     save_delta()
@@ -789,6 +807,7 @@ def refresh_gpx_history() -> str:
 
 
 def save_delta() -> None:
+    """saves the difference between the current project file being edited and its original from the galaxy history as a "delta" binary file."""
     diff = DeepDiff(og_gpx(), gpx(), exclude_paths="filename")
     delta = Delta(diff)
     with open("delta1", "wb") as dump_file:
