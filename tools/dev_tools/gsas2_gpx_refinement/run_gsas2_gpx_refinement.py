@@ -1,8 +1,8 @@
 import os
 import sys
+import shutil
 import numpy as np
 from deepdiff import Delta
-
 
 """
 change how GSASIIscriptable is imported for actual deployment
@@ -43,21 +43,13 @@ def run_gsas2_fit(
         gsas2 .gpx project file
     """
 
-    def HistStats(gpx):
-        """prints profile rfactors for all histograms"""
-        print("*** profile Rwp, " + os.path.split(gpx.filename)[1])
-        for hist in gpx.histograms():
-            print("\t{:20s}: {:.2f}".format(hist.name, hist.get_wR()))
-        print("")
-
     print("INFO: Build GSAS-II Project File.")
     print("******************************")
 
     # start GSAS-II refinement
     # create a project file
 
-    proj_path = os.path.join(os.getcwd(), "portal/",
-                             output_stem_fn + "_initial.gpx")
+    proj_path = os.path.join(os.getcwd(), output_stem_fn + "_initial.gpx")
 
     print(proj_path)
 
@@ -71,10 +63,10 @@ def run_gsas2_fit(
 
     # create a readable text file detailing parameter changes
     flat_dicts = delta.to_flat_dicts()
-    delta_fp = os.path.join(os.getcwd(), "portal/", "parameters_changed.txt")
-    with open(delta_fp, "w") as delta_file:
+    updated_parameters_fp = os.path.join(os.getcwd(), "portal/", "parameters_updated.txt")
+    with open(updated_parameters_fp, "w") as updated_parameters_file:
         for change in flat_dicts:
-            delta_file.write(change['action'] + ": " + str(change["path"]) + " = " + str(change["value"]) + "\n")
+            updated_parameters_file.write(change['action'] + ": " + str(change["path"]) + " = " + str(change["value"]) + "\n")
 
     # check if the project got created
     if os.path.exists(proj_path):
@@ -90,12 +82,16 @@ def run_gsas2_fit(
 
     # before fit, save project file first.
     # Then in the future, the refined project file will update this one.
-    gpx.save(os.path.join(os.getcwd(),
-                          "portal/", output_stem_fn + "_refined.gpx"))
+    gpx.save(os.path.join(os.getcwd(), output_stem_fn + "_refined.gpx"))
 
     gpx.do_refinements([{}])
     print("================")
+    gpx_output_file_path = os.path.join(os.getcwd(),"portal/", output_stem_fn + "_refined.gpx")
+    gpx.save(filename=gpx_output_file_path)
 
+    lst_file_path = os.path.join(os.getcwd(), output_stem_fn + "_refined.lst")
+    lst_output_file_path = os.path.join(os.getcwd(), "portal/", output_stem_fn + "_refined.lst")
+    shutil.copy(lst_file_path, lst_output_file_path)
     # save results data
 
     rw = gpx.histogram(0).get_wR() * 0.01
@@ -108,9 +104,10 @@ def run_gsas2_fit(
     refs = gpx.histogram(0).reflections()
     ref_list = refs[gpx.phases()[0].name]["RefList"]
 
-    output_cif_fn = os.path.join(os.getcwd(),
+    """output_cif_fn = os.path.join(os.getcwd(),
                                  "portal/", output_stem_fn + "_refined.cif")
     gpx.phases()[0].export_CIF(output_cif_fn)
+    """
     cell_r = gpx.phases()[0].get_cell()
 
     return rw, x, y, ycalc, dy, bkg, cell_i, cell_r, ref_list
