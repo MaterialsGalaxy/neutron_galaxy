@@ -80,6 +80,19 @@ def get_project(dataset_id: str, filep: str) -> None:
     )
 
 
+def run_generate_cifs(dataset_id:str) -> None:
+    """runs the GSASII refinement: output generator tool in galaxy using the selected GSASII project file. CIF files will be output into the Galaxy history.
+
+    Args:
+        dataset_id (str): galaxy API id of the current GSASII project used to generate the CIF files.
+    """
+    history_id = os.environ["HISTORY_ID"]
+    gi = get_galaxy_connection()
+    input_data = {}
+    input_data["project"] = {"values": [{"src": "hda", "id": dataset_id}]}
+    gi.tools.run_tool(history_id, "gpx_gsas2_output", input_data)
+
+
 def run_refinement(dataset_id: str, delta_id: str) -> None:
     """runs the GSASII refinement: interactive executor tool in galaxy,
     using a project file and a project delta as inputs to the executor tool

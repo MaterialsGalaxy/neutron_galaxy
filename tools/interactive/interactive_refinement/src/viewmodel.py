@@ -93,22 +93,22 @@ def add_constr(
         var_df (pd.DataFrame): table of permitted constraint parameters
     """
     # add constraints to constraints list and to gpx
-    constr_vars = constraint_df["code"].tolist()
-    constr_coefs = constraint_df["coefficients"].tolist()
+    constr_vars = constraint_df["Code"].tolist()
+    constr_coefs = constraint_df["Coefficients"].tolist()
 
     # validation
     valid = False
     if len(constraint_df.index) >= 2:
-        vars_valid = set(constr_vars).issubset(set(var_df["code"].tolist()))
+        vars_valid = set(constr_vars).issubset(set(var_df["Code"].tolist()))
         if vars_valid:
             try:
                 coefs = [float(c) for c in constr_coefs]
             except Exception:
-                print("invalid coefficients")
+                print("Invalid coefficients")
             else:
                 valid = True
         else:
-            print("invalid parameter name")
+            print("Invalid parameter name")
 
     # add the constriants to the gpx
     if valid:
@@ -129,7 +129,7 @@ def build_constraints_df(phase_name: str) -> pd.DataFrame:
         pd.DataFrame: The dataframe of variables
     """
     # initialise constraints
-    constraint_cols = ["code", "phase", "parameter", "atom"]
+    constraint_cols = ["Code", "Phase", "Parameter", "Atom"]
     phase_constr_df = pd.DataFrame(columns=constraint_cols)
 
     phase = gpx().phase(phase_name)
@@ -177,7 +177,7 @@ def show_phase_constr() -> pd.DataFrame:
     """
     gpx().index_ids()
     constraints = load_phase_constraints(gpx())
-    current_constraints = pd.DataFrame(columns=["current constraints"])
+    current_constraints = pd.DataFrame(columns=["Current constraints"])
     # rearrange the data for visualisation
     for constraint in constraints:
         # equation constraint
@@ -205,7 +205,7 @@ def show_phase_constr() -> pd.DataFrame:
 
         # add new entry to dataframe
         current_constraints.loc[len(current_constraints)] = {
-            "current constraints": new_entry,
+            "Current constraints": new_entry,
         }
 
     return current_constraints
@@ -224,14 +224,14 @@ def save_atom_table(df: pd.DataFrame, phase_name: str) -> None:
 
     for atom in phase.atoms():
         atom_record = df.loc[df["Name"] == atom.label]
-        refinement_flags = atom_record.iloc[0]["refine"]
+        refinement_flags = atom_record.iloc[0]["Refine"]
         check_flags = refinement_flags
         for f in "FXU":
             check_flags = check_flags.replace(f, "", 1)
         if check_flags == "":
             atom.refinement_flags = refinement_flags
         else:
-            print("invalid flags")
+            print("Invalid flags")
 
 
 def atom_data(phase_name: str) -> pd.DataFrame:
@@ -248,7 +248,7 @@ def atom_data(phase_name: str) -> pd.DataFrame:
     phase = gpx().phase(phase_name)
 
     # initialise the dataframe
-    atom_cols = ["Name", "type", "refine", "x", "y", "z", "frac", "multi", "Uiso"]
+    atom_cols = ["Name", "Type", "Refine", "X", "Y", "Z", "Frac", "Multi", "Uiso"]
     atom_frame: pd.DataFrame = pd.DataFrame(columns=atom_cols)
 
     # populate the dataframe with data from the project
@@ -819,14 +819,18 @@ def submit_out(current_gpx_id: str) -> None:
     Args:
         current_gpx_id (str): Galaxy API ID for the GSASII project file.
     """
-
+    # refresh history get history id add the HID to the name of the delta
     gpx().save()
     file_path: str = gpx().filename
     file_name = os.path.basename(file_path)
-    save_delta(file_name)
-    gxhistory.put("delta1")
+    history_table = get_update_history()
+    current_gpx_history_entry = history_table.loc[history_table["id"] == current_gpx_id]
+    history_id = str(current_gpx_history_entry['hid'].loc[current_gpx_history_entry.index[0]])
 
-    # wait for the file to save in galaxy and run refinement
+    delta_file_name = save_delta(file_name, history_id)
+    gxhistory.put(delta_file_name)
+
+    # wait for the delta file to save in galaxy and run refinement
     id = refresh_latest_history_entry_id()
     gxhistory.run_refinement(current_gpx_id, id)
     # current_gpx_id.set(id)
@@ -857,16 +861,39 @@ def refresh_latest_history_entry_id() -> str:
     return id
 
 
-def save_delta(file_name: str) -> None:
+def save_delta(file_name: str, history_id: str) -> str:
     """saves the difference between the current project file being edited
     and its original from the galaxy history as a "delta" binary file.
 
     Args:
         file_name (str): name of the GSASII project file
+        history_id (str): galaxy history id of the current GSASII project file which the Delta is taken from.
+
+    Returns:
+        str: Delta file name to be output to the galaxy history
     """
     og_project_file = "og_" + file_name
     og_gpx = gsas_load_gpx(og_project_file, og_project_file)
+
+    # ensure phase atom names are loaded
+    og_gpx.index_ids()
+    gpx().index_ids()
+
     diff = DeepDiff(og_gpx, gpx(), exclude_paths="filename")
     delta = Delta(diff)
-    with open("delta1", "wb") as dump_file:
+    delta_file_name = "Delta_on_" + history_id
+    with open(delta_file_name, "wb") as dump_file:
         delta.dump(dump_file)
+    return delta_file_name
+
+
+def generate_cifs(current_gpx_id: str) -> None:
+    """Runs static output generator tool in galaxy to generate CIF files from a GSASII project. CIF files for all phases will be generated in the Galaxy history.
+
+    Args:
+        current_gpx_id (str): galaxy API id of the current GSASII project used to generate the CIF files.
+    """
+    gxhistory.run_generate_cifs(current_gpx_id)
+    id = refresh_latest_history_entry_id()
+    gxhistory.wait_for_dataset(id)
+    update_history()
