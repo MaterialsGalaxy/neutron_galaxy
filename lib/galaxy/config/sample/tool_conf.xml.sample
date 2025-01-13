@@ -1,12 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <toolbox monitor="true">
   <section id="dev_tools" name="Tools under development">
-    <tool file="dev_tools/gsas2_refinement/gsas2_refinement.xml" />
     <tool file="dev_tools/upload_gsas2_refinement/upload_gsas2_refinement.xml" />
-    <tool file="dev_tools/gsas2_refinement_sample_instrument_prms/sample_prms_gsas2_refinement.xml" />
-    <tool file="dev_tools/gsas2_refinement_constraints/gsas2_refinement_constraints.xml" />
-    <tool file="dev_tools/gsas2_refinement_atoms/gsas2_refinement_atoms.xml" />
     <tool file="dev_tools/gsas2_gpx_refinement/gsas2_gpx_refinement.xml" />
+    <tool file="dev_tools/gsas2_gpx_output/gsas2_gpx_output.xml" />
     <tool file="dev_tools/interactive_refinement/dev_interactive_refinement_demo.xml" />
 
   </section>
