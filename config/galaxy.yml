@@ -15,7 +15,7 @@ galaxy:
   interactivetools_enable: true
   interactivetools_map: database/interactivetools_map.sqlite
   admin_users: patrick.austin@stfc.ac.uk,subindev.devadasan@stfc.ac.uk,leandro.liborio@stfc.ac.uk,milan.kumar@stfc.ac.uk
-
+  enable_celery_tasks: true
   # outputs_to_working_directory will provide you with a better level of isolation. It is highly recommended to set
   # this parameter with InteractiveTools.
   outputs_to_working_directory: true

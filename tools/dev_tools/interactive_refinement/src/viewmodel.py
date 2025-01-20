@@ -14,6 +14,8 @@ from gsasIImodel import (
 import plotly.express as px
 import typing
 import time
+import random as ran
+import sys
 
 """contains all reactive events functions and variables
 and processes all logic from the ui, GSASII and galaxy history models.
@@ -33,6 +35,11 @@ phase_choices = {"init": "Load a project before selecting a phase"}
 hist_choices = {"init": "Load a project before selecting a histogram"}
 
 view_hist_choices = {"init": "Load a project before selecting a histogram"}
+
+diffractometer_choices = {
+    "Debye-Scherrer": "Debye-Scherrer",
+    "Bragg-Brentano": "Bragg-Brentano",
+}
 
 view_proj_choices = {
     "Notebook": "Notebook",
@@ -70,6 +77,65 @@ background_functions = {
     "inv interpolate": "inv interpolate",
     "log interpolate": "log interpolate",
 }
+
+parameter_keys_to_labels = {
+    "Absorption": "Sample absorption", 
+    "Constrast": "Constrast",
+    "DisplaceX": "Sample X displ. perp. to beam",
+    "DisplaceY": "Sample Y displ. || to beam",
+    "Gonio. radius": "Goniometer radius (mm)",
+    "Omega": "Goniometer omega",
+    "Chi": "Goniometer chi",
+    "Phi": "Goniometer phi",
+    "Azimuth": "Detector azimuth",
+    "SurfRoughA": "Surface roughness A",
+    "SurfRoughB": "Surface roughness B",
+    "Shift": "Sample dispalcement",
+    "Transparency": "Sample transparency",
+    "Scale": "Histogram scale factor",
+    "InstrName": "Instrument name",
+    "Temperature": "Sample temperature (K)",
+    "Pressure": "Sample pressure (MPa)",
+    "Time": "Clock time (s)",
+    "FreePrm1": "Sample humidity (%)",
+    "FreePrm2": "Sample voltage (V)",
+    "FreePrm3": "Applied load (MN)",
+    "ranId": "Random ID",
+    "Type": "Type",
+    "Materials": "Materials",
+    "Thick": "Sample Thickness",
+    "Trans": "Transmission (meas)",
+    "SlitLen": "Slit length",
+    "Lam": "Lam",
+    "Lam1":"Lam1",
+    "Lam2":"Lam2",
+    "Zero": "Zero",
+    "I(L2)/I(L1)":"I(L2)/I(L1)",
+    "Polariz.":"Polariz.", 
+    "U": "U",
+    "V": "V",
+    "W": "W",
+    "X": "X",
+    "Y": "Y",
+    "Z": "Z",
+    "SH/L": "SH/L",
+    "Azimuth": "Azimuth",
+    "Source": "Source", 
+    "Bank": "Bank", 
+    "alpha": "alpha", 
+    "beta-0": "beta-0", 
+    "beta-1": "beta-1",  
+    "beta-q": "beta-q", 
+    "sig-0": "sig-0", 
+    "sig-1": "sig-1", 
+    "sig-2": "sig-2", 
+    "sig-q": "sig-q", 
+    "difA": "difA", 
+    "difB": "difB", 
+    "difC": "difC",
+}
+
+parameter_labels_to_keys = {v: k for k, v in parameter_keys_to_labels.items()}
 
 
 def update_nav(tab: str) -> None:
@@ -112,10 +178,66 @@ def add_constr(
 
     # add the constriants to the gpx
     if valid:
+        generate_new_random_ids(constr_vars)
+
         if constraint_type == "eqv":
             gpx().add_EquivConstr(constr_vars, multlist=coefs)
         elif constraint_type == "eqn":
             gpx().add_EqnConstr(1, constr_vars, multlist=coefs)
+
+
+def generate_new_random_ids(constr_vars: list) -> None:
+    """generates and applies new random ids to any phases and atoms referenced in a list of GSASII variable objects.
+
+    Args:
+        constr_vars (list): a list of GSASII variable objects with structure 'phasenum:histnum:variable:atomnum'. The list is used to define phase constraints in the GSASII project.
+    """
+    atom_list = []
+    phase_list = []
+    for var in constr_vars:
+        separation = var.split(":")
+        phase = int(separation[0])
+        atom = int(separation[3])
+        phase_list.append(phase)
+        atom_list.append([phase, atom])
+    # now have a list of atoms in their phases
+    # atoms_to_id = list(set(atom_list))  # unique list
+    phases_to_id = list(set(phase_list))  # unique list
+    new_ids = {}
+
+    # generate new r_ids for the phases
+    for phase_num in phases_to_id:
+        phase_name = gpx().phases()[phase_num].name
+        phase_rid = gpx().phase(phase_name).ranId
+        new_phase_rid = ran.randint(0, sys.maxsize)
+        new_ids[phase_rid] = new_phase_rid
+        gpx().data["Phases"][phase_name]["ranId"] = new_phase_rid
+
+    # generate new r_ids for the atoms involved.
+    for atom_address in atom_list:
+        phase_num = atom_address[0]
+        atom_num = atom_address[1]
+        phase_name = gpx().phases()[phase_num].name
+        atom_rid = gpx().data["Phases"][phase_name]["Atoms"][atom_num][17]
+        new_atom_rid = ran.randint(0, sys.maxsize)
+        new_ids[atom_rid] = new_atom_rid
+        gpx().data["Phases"][phase_name]["Atoms"][atom_num][17] = new_atom_rid
+
+    # loop through constraints and edit the relevant ids
+    phase_constraints = load_phase_constraints(gpx())
+    for constraint in phase_constraints:
+        vars = constraint[:-3]
+        for var in vars:
+            try:
+                var[1].phase = new_ids[var[1].phase]
+            except Exception:
+                pass
+
+            try:
+                var[1].atom = new_ids[var[1].atom]
+            except Exception:
+                pass
+    gpx().index_ids()
 
 
 def build_constraints_df(phase_name: str) -> pd.DataFrame:
@@ -380,7 +502,29 @@ def save_bkg_coefs(hist_name: str, coefs: list) -> None:
             bkg_data[0][3:] = new_coefs
 
 
-def build_instrument_df(hist_name) -> pd.DataFrame:
+def render_instrument_text(hist_name:str) -> str:
+    h = gpx().histogram(hist_name)
+    instrument_parameters: dict = h.getHistEntryValue(["Instrument Parameters"])[0]
+    instrument_type = instrument_parameters["Type"][1]
+    instrument_bank = str(instrument_parameters["Bank"][1])
+
+    return "Histogram type: " + instrument_type + " Bank: " + instrument_bank
+
+
+def build_instrument_df(hist_name:str) -> pd.DataFrame:
+    h = gpx().histogram(hist_name)
+    instrument_parameters: dict = h.getHistEntryValue(["Instrument Parameters"])[0]
+    instrument_df = pd.DataFrame(columns=["Parameter", "Value"])
+    input_list = ["X", "Y", "Z", "Zero", "Azimuth"]
+    for param in input_list:
+        df_value = instrument_parameters[param][1]
+        param_label = parameter_keys_to_labels[param]
+        new_row = {"Parameter": param_label, "Value": df_value}
+        instrument_df.loc[len(instrument_df)] = new_row
+    return instrument_df
+
+
+def build_instrument_type_df(hist_name) -> pd.DataFrame:
     """Builds a dataframe of instrument parameter values
     taken from the selected GSASII Project object histogram.
     The returned dataframe is used to be output to the UI.
@@ -395,22 +539,22 @@ def build_instrument_df(hist_name) -> pd.DataFrame:
     h = gpx().histogram(hist_name)
     instrument_parameters: dict = h.getHistEntryValue(["Instrument Parameters"])[0]
     instrument_df = pd.DataFrame(columns=["Parameter", "Value"])
-
+    no_input_list = ["Source", "X", "Y", "Z", "Zero", "Azimuth", "Type", "Bank"]
     for param, val in instrument_parameters.items():
-        no_input_list = ["Source"]
         if param not in no_input_list:
             if isinstance(val, list):
                 df_value = val[1]
             else:
                 continue
-            new_row = {"Parameter": param, "Value": df_value}
+            param_label = parameter_keys_to_labels[param]
+            new_row = {"Parameter": param_label, "Value": df_value}
             instrument_df.loc[len(instrument_df)] = new_row
 
     return instrument_df
 
 
 def save_instrument_parameters(
-    hist_name: str, instrument_df: pd.DataFrame, instrument_refinements: list
+    hist_name: str, instrument_df:pd.DataFrame, instrument_type_df: pd.DataFrame, instrument_refinements: list
 ) -> None:
     """Saves instrument parameters and refinement parameters
     from an input Dataframe and refinement parameter list
@@ -418,7 +562,7 @@ def save_instrument_parameters(
 
     Args:
         hist_name (str): The name of the selected histogram.
-        instrument_df (pd.DataFrame): The input instrument parameters values.
+        instrument_type_df (pd.DataFrame): The input instrument parameters values.
         instrument_refinements (list): The parameters to be refined.
     """
     h = gpx().histogram(hist_name)
@@ -433,16 +577,18 @@ def save_instrument_parameters(
     for param in instrument_refinements:
         instrument_parameters[param][2] = True
 
-    # copy in parameter values row by row
-    for row in instrument_df.itertuples():
-        param = row.Parameter
-        df_value = row.Value
-        val = instrument_parameters[param]
+    for df in [instrument_df, instrument_type_df]:
+        # copy in parameter values row by row
+        for row in df.itertuples():
+            param_label = row.Parameter
+            param= parameter_labels_to_keys[param_label]
+            df_value = row.Value
+            val = instrument_parameters[param]
 
-        # type validation
-        if isinstance(val, list):
-            # set values in GSASII project object directly
-            val[1] = type(val[1])(df_value)
+            # type validation
+            if isinstance(val, list):
+                # set values in GSASII project object directly
+                val[1] = type(val[1])(df_value)
 
 
 def update_instrument_refinements(hist_name: str) -> None:
@@ -460,13 +606,13 @@ def update_instrument_refinements(hist_name: str) -> None:
     # populating list of sample refinements that are already active
     instrument_refinement_choices = {}
     instrument_refinements = []
-    no_refinements = ["Bank", "Source", "Type"]
+    no_refinements = ["Bank", "Source", "Type", "Azimuth", "Lam1", "Lam2", "2-theta", "fltPath"]
     for param, val in instrument_parameters.items():
         # set sample choices dict for UI
         if param not in no_refinements:
             if isinstance(val, list) and len(val) == 3:
                 if isinstance(val[1], (int, float)):
-                    instrument_refinement_choices[param] = param
+                    instrument_refinement_choices[param] = parameter_keys_to_labels[param]
                     if val[2]:
                         instrument_refinements.append(param)
 
@@ -476,6 +622,19 @@ def update_instrument_refinements(hist_name: str) -> None:
         selected=instrument_refinements,
     )
 
+
+def build_sample_notes_df(hist_name: str) -> pd.DataFrame:
+    h = gpx().histogram(hist_name)
+    sample_parameters: dict = h.getHistEntryValue(["Sample Parameters"])
+    sample_notes_df = pd.DataFrame(columns=["Parameter", "Value"])
+    note_parameters = ["Temperature", "Pressure", "Time", "FreePrm1", "FreePrm2", "FreePrm3"]
+    for param in note_parameters:
+        df_value = sample_parameters[param]
+        param_label = parameter_keys_to_labels[param]
+        new_row = {"Parameter": param_label, "Value": df_value}
+        sample_notes_df.loc[len(sample_notes_df)] = new_row
+
+    return sample_notes_df
 
 def build_sample_df(hist_name: str) -> pd.DataFrame:
     """Builds a dataframe of the selected histograms Sample Parameters
@@ -493,9 +652,16 @@ def build_sample_df(hist_name: str) -> pd.DataFrame:
     sample_parameters: dict = h.getHistEntryValue(["Sample Parameters"])
     sample_df = pd.DataFrame(columns=["Parameter", "Value"])
 
+    no_input_list = ["Type", "Materials", "ranId", "Temperature", "Pressure", "Time", "FreePrm1", "FreePrm2", "FreePrm3", "Thick", "Contrast", "SlitLen"]
+    if sample_parameters["Type"] == "Debye-Scherrer":
+        no_input_ds = ["Trans", "SurfaceRoughA", "SurfaceRoughB", "Shift", "Transparency"]
+        no_input_list.extend(no_input_ds)
+    elif sample_parameters["Type"] == "Bragg-Brentano":
+        no_input_bb = ["Absorption", "DisplaceX", "DisplaceY"]
+        no_input_list.extend(no_input_bb)
     # populate the dataframe with sample parameters and values
     for param, val in sample_parameters.items():
-        no_input_list = ["Materials"]
+        
         if param not in no_input_list:
 
             if isinstance(val, list):
@@ -504,15 +670,15 @@ def build_sample_df(hist_name: str) -> pd.DataFrame:
                 df_value = val
             else:
                 continue
-
-            new_row = {"Parameter": param, "Value": df_value}
+            param_label = parameter_keys_to_labels[param]
+            new_row = {"Parameter": param_label, "Value": df_value}
             sample_df.loc[len(sample_df)] = new_row
 
     return sample_df
 
 
 def save_sample_parameters(
-    hist_name: str, sample_df: pd.DataFrame, sample_refinements: list
+    hist_name: str, diffractometer_type: str, sample_df: pd.DataFrame, sample_notes_df: pd.DataFrame, sample_refinements: list
 ) -> None:
     """saves sample parameters from an input dataframe
     to the selected histogram in the GSASII project object.
@@ -521,8 +687,19 @@ def save_sample_parameters(
         hist_name (str): name of the selected histogram
         sample_df (pd.DataFrame): sample parameter values input from the UI
     """
+
     h = gpx().histogram(hist_name)
     sample_parameters = h.getHistEntryValue(["Sample Parameters"])
+    # save diffractometer type
+    h.setHistEntryValue(["Sample Parameters", "Type"], diffractometer_type)
+    # save the sample notes
+    # copy in parameter values row by row
+    for row in sample_notes_df.itertuples():
+        param_label = row.Parameter
+        param = parameter_labels_to_keys[param_label]
+        df_value = row.Value
+        val = sample_parameters[param]
+        h.setHistEntryValue(["Sample Parameters", param], type(val)(df_value))
 
     # set all refinement flags to false
     for param, val in sample_parameters.items():
@@ -537,7 +714,8 @@ def save_sample_parameters(
 
     # copy in parameter values row by row
     for row in sample_df.itertuples():
-        param = row.Parameter
+        param_label = row.Parameter
+        param = parameter_labels_to_keys[param_label]
         df_value = row.Value
         val = sample_parameters[param]
 
@@ -566,19 +744,31 @@ def update_sample_refinements(hist_name: str) -> None:
     # populating list of sample refinements that are already active
     sample_refinement_choices = {}
     sample_refinements = []
+    prevent_refinements = ["Materials", "Azimuth"]
+    if sample_parameters["Type"] == "Debye-Scherrer":
+        prevent_refinements.extend(["Trans", "SurfRoughA", "SurfRoughB", "Transparency", "Shift"])
+    elif sample_parameters["Type"] == "Bragg-Brentano":
+        prevent_refinements.extend(["Absorption", "DisplaceX", "DisplaceY"])
+
     for param, val in sample_parameters.items():
-        # set sample choices dict for UI
-        if isinstance(val, list):
-            if isinstance(val[1], bool):
-                sample_refinement_choices[param] = param
-                if val[1]:
-                    sample_refinements.append(param)
+        if param not in prevent_refinements:
+            # set sample choices dict for UI
+            if isinstance(val, list):
+                if isinstance(val[1], bool):
+                    sample_refinement_choices[param] = parameter_keys_to_labels[param]
+                    if val[1]:
+                        sample_refinements.append(param)
 
     # update the UI
     ui.update_selectize(
         "samp_selection",
         choices=sample_refinement_choices,
         selected=sample_refinements,
+    )
+
+    ui.update_select(
+        "samp_type",
+        selected=sample_parameters["Type"],
     )
 
 
@@ -887,13 +1077,13 @@ def save_delta(file_name: str, history_id: str) -> str:
     return delta_file_name
 
 
-def generate_cifs(current_gpx_id: str) -> None:
-    """Runs static output generator tool in galaxy to generate CIF files from a GSASII project. CIF files for all phases will be generated in the Galaxy history.
+def generate_outputs(current_gpx_id: str) -> None:
+    """Runs static output generator tool in galaxy to generate CIF files and histogram csv files from a GSASII project. Files will be generated in the Galaxy history.
 
     Args:
-        current_gpx_id (str): galaxy API id of the current GSASII project used to generate the CIF files.
+        current_gpx_id (str): galaxy API id of the current GSASII project used to generate the files.
     """
-    gxhistory.run_generate_cifs(current_gpx_id)
+    gxhistory.run_generate_outputs(current_gpx_id)
     id = refresh_latest_history_entry_id()
     gxhistory.wait_for_dataset(id)
     update_history()

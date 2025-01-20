@@ -10,22 +10,26 @@
         touch $output &&
         mkdir portal &&
         ln -s $project gsas_project.gpx &&
-        ln -s $delta delta1 &&
+        #for $delta in $deltas
+            ln -s $delta '$delta.element_identifier' &&
+        #end for
         python $__tool_directory__/gsas2_gpx_refinement.py
                 --project-filename gsas_project.gpx
-                --delta-filename delta1
-                --output-directory /portal      
+                --delta-filenames #for $delta in $deltas # '$delta.element_identifier' #end for #
+                --output-gpx '$gpx'
+                --output-lst '$lst'
+                --output-parameters '$parameters'      
         > >(tee -a $output) 2> >(tee -a $output >&2)
     ]]></command>
     <inputs>
         <param name="project" type="data" format="Binary" label="GSASII project file"/>
-        <param name="delta" type="data" format="Binary" label="deltas from interactive tool" />
+        <param name="deltas" type="data" format="Binary" multiple="true" label="deltas from interactive tool" />
     </inputs>
     <outputs>
-        <data format="txt" name="output" label="GSAS2 console output"></data>
-        <collection type="list" name="output_collection1" label="GSAS2 refinement output">
-            <discover_datasets format="binary" pattern="__designation__" directory="app/portal" visible="true"/>
-        </collection>
+        <data format="txt" name="output" label="GSAS2 console output"/>
+        <data format="binary" name="gpx" label="gsas2_refinement_refined.gpx"/>
+        <data format="txt" name="lst" label="gsas2_refinement_refined.lst"/>
+        <data format="txt" name="parameters" label="parameters_updated.txt"/>
     </outputs>
     <help>
         A tool to run a GSAS2 Rietveld refinement on a GSASII project file. This tool is intended to be called from the GSASII interactive refinement tool. 

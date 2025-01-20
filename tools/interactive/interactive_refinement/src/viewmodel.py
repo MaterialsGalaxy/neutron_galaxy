@@ -14,6 +14,8 @@ from gsasIImodel import (
 import plotly.express as px
 import typing
 import time
+import random as ran
+import sys
 
 """contains all reactive events functions and variables
 and processes all logic from the ui, GSASII and galaxy history models.
@@ -112,10 +114,66 @@ def add_constr(
 
     # add the constriants to the gpx
     if valid:
+        generate_new_random_ids(constr_vars)
+
         if constraint_type == "eqv":
             gpx().add_EquivConstr(constr_vars, multlist=coefs)
         elif constraint_type == "eqn":
             gpx().add_EqnConstr(1, constr_vars, multlist=coefs)
+
+
+def generate_new_random_ids(constr_vars: list) -> None:
+    """generates and applies new random ids to any phases and atoms referenced in a list of GSASII variable objects.
+
+    Args:
+        constr_vars (list): a list of GSASII variable objects with structure 'phasenum:histnum:variable:atomnum'. The list is used to define phase constraints in the GSASII project.
+    """
+    atom_list = []
+    phase_list = []
+    for var in constr_vars:
+        separation = var.split(":")
+        phase = int(separation[0])
+        atom = int(separation[3])
+        phase_list.append(phase)
+        atom_list.append([phase, atom])
+    # now have a list of atoms in their phases
+    # atoms_to_id = list(set(atom_list))  # unique list
+    phases_to_id = list(set(phase_list))  # unique list
+    new_ids = {}
+
+    # generate new r_ids for the phases
+    for phase_num in phases_to_id:
+        phase_name = gpx().phases()[phase_num].name
+        phase_rid = gpx().phase(phase_name).ranId
+        new_phase_rid = ran.randint(0, sys.maxsize)
+        new_ids[phase_rid] = new_phase_rid
+        gpx().data["Phases"][phase_name]["ranId"] = new_phase_rid
+
+    # generate new r_ids for the atoms involved.
+    for atom_address in atom_list:
+        phase_num = atom_address[0]
+        atom_num = atom_address[1]
+        phase_name = gpx().phases()[phase_num].name
+        atom_rid = gpx().data["Phases"][phase_name]["Atoms"][atom_num][17]
+        new_atom_rid = ran.randint(0, sys.maxsize)
+        new_ids[atom_rid] = new_atom_rid
+        gpx().data["Phases"][phase_name]["Atoms"][atom_num][17] = new_atom_rid
+
+    # loop through constraints and edit the relevant ids
+    phase_constraints = load_phase_constraints(gpx())
+    for constraint in phase_constraints:
+        vars = constraint[:-3]
+        for var in vars:
+            try:
+                var[1].phase = new_ids[var[1].phase]
+            except Exception:
+                pass
+
+            try:
+                var[1].atom = new_ids[var[1].atom]
+            except Exception:
+                pass
+    gpx().index_ids()
 
 
 def build_constraints_df(phase_name: str) -> pd.DataFrame:
@@ -887,13 +945,13 @@ def save_delta(file_name: str, history_id: str) -> str:
     return delta_file_name
 
 
-def generate_cifs(current_gpx_id: str) -> None:
-    """Runs static output generator tool in galaxy to generate CIF files from a GSASII project. CIF files for all phases will be generated in the Galaxy history.
+def generate_outputs(current_gpx_id: str) -> None:
+    """Runs static output generator tool in galaxy to generate CIF files and histogram csv files from a GSASII project. Files will be generated in the Galaxy history.
 
     Args:
-        current_gpx_id (str): galaxy API id of the current GSASII project used to generate the CIF files.
+        current_gpx_id (str): galaxy API id of the current GSASII project used to generate the files.
     """
-    gxhistory.run_generate_cifs(current_gpx_id)
+    gxhistory.run_generate_outputs(current_gpx_id)
     id = refresh_latest_history_entry_id()
     gxhistory.wait_for_dataset(id)
     update_history()
