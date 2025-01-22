@@ -148,6 +148,7 @@
     <tool file="interactive/interactivetool_openrefine.xml" />
     <tool file="interactive/interactivetool_phinch.xml" />
     <tool file="interactive/interactivetool_rstudio.xml" />
+    <tool file="interactive/interactivetool_GSASII_refinement_demo/interactivetool_GSASII_refinement_demo.xml"/>
   </section>
   -->
 </toolbox>
